@@ -13,11 +13,6 @@ Munich, Germany
 - [GitHub](https://github.com/yavuztopsever)
 - [LinkedIn](https://www.linkedin.com/in/yavuztopsever)
 
-### Professional Background
-- **Current**: Trainee at QA Team, PagoNxt Merchant Solutions (Munich)
-- **Previous**: Working Student at Group Risk Reporting Team, Allianz SE (Munich)
-- **Education**: Mathematical Engineering, Bachelor's Degree - Yildiz Technical University (YTU)
-
 ### Technical Expertise
 - **Languages**: Python, Java, JavaScript
 - **ML/AI**: PyTorch, Scikit-learn, CNNs, RNNs, Transformers
