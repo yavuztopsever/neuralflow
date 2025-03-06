@@ -1,0 +1,61 @@
+# User-level configuration for LangGraph
+# Copy this file to ~/.langgraph/config.yaml and modify as needed
+
+# User-specific paths
+paths:
+  data_dir: "~/langgraph_data"  # Directory for storing data
+  models_dir: "~/langgraph_models"  # Directory for storing models
+  logs_dir: "~/langgraph_logs"  # Directory for storing logs
+
+# API Keys and Credentials
+api_keys:
+  openai: "${OPENAI_API_KEY}"  # Your OpenAI API key
+  anthropic: "${ANTHROPIC_API_KEY}"  # Your Anthropic API key
+  huggingface: "${HUGGINGFACE_API_KEY}"  # Your HuggingFace API key
+
+# Model Preferences
+models:
+  llm:
+    default: "gpt-3.5-turbo"  # Your preferred LLM
+    temperature: 0.7
+    max_tokens: 2000
+  embeddings:
+    default: "text-embedding-ada-002"  # Your preferred embedding model
+
+# Storage Preferences
+storage:
+  vector_store:
+    default: "pinecone"  # Your preferred vector store
+    pinecone:
+      environment: "us-west1-gcp"  # Your Pinecone environment
+  cache:
+    default: "redis"  # Your preferred cache backend
+    redis:
+      host: "localhost"
+      port: 6379
+
+# Development Settings
+development:
+  debug: true
+  log_level: "DEBUG"
+  use_local_llm: true
+  minimal_mode: true
+
+# Performance Settings
+performance:
+  max_workers: 4
+  batch_size: 32
+  cache_ttl: 3600  # 1 hour
+
+# Custom Workflow Settings
+workflow:
+  max_retries: 3
+  timeout: 300
+  parallel_execution: true
+
+# Custom Logging Settings
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "~/langgraph_logs/app.log"
+  console: true 

@@ -1,0 +1,104 @@
+# Development configuration for LangGraph
+# This file overrides default.yaml settings for development environment
+
+# Core settings
+core:
+  debug: true
+  log_level: DEBUG
+  max_workers: 2
+  timeout: 600  # seconds
+
+# Model settings
+models:
+  llm:
+    providers:
+      openai:
+        model: gpt-3.5-turbo
+        temperature: 0.8
+        max_tokens: 1000
+      anthropic:
+        model: claude-instant-1
+        temperature: 0.9
+        max_tokens: 1000
+      huggingface:
+        model: gpt2-small
+        temperature: 0.8
+        max_tokens: 500
+  embeddings:
+    providers:
+      sentence_transformers:
+        model: all-MiniLM-L6-v2
+        device: cpu
+
+# Storage settings
+storage:
+  vector_store:
+    providers:
+      pinecone:
+        dimension: 768
+        metric: cosine
+      weaviate:
+        dimension: 768
+        metric: cosine
+      milvus:
+        dimension: 768
+        metric: cosine
+  cache:
+    providers:
+      redis:
+        max_connections: 5
+        socket_timeout: 2
+      memcached:
+        max_connections: 5
+        socket_timeout: 2
+      memory:
+        max_size: 100
+
+# Workflow settings
+workflow:
+  max_retries: 5
+  retry_delay: 2  # seconds
+  timeout: 600  # seconds
+  batch_size: 50
+
+# Logging settings
+logging:
+  level: DEBUG
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  console: true
+  max_size: 5242880  # 5MB
+  backup_count: 3
+
+# Monitoring settings
+monitoring:
+  metrics_port: 9091
+  tracing:
+    enabled: true
+    provider: jaeger
+
+# Security settings
+security:
+  enable_auth: false
+  jwt_expiry: 3600  # 1 hour
+  rate_limit: 1000
+  rate_limit_period: 3600  # 1 hour
+
+# Document processing settings
+document_processing:
+  max_document_size: 1048576  # 1MB
+  supported_formats:
+    - txt
+    - pdf
+  chunk_size: 500
+  chunk_overlap: 100
+
+# Graph settings
+graph:
+  max_nodes: 100
+  max_edges: 500
+  update_interval: 60  # 1 minute
+
+# Memory settings
+memory:
+  max_items: 100
+  cleanup_interval: 60  # 1 minute
