@@ -2,6 +2,30 @@
 
 NeuralFlow is a powerful and flexible framework for building and managing AI workflows, with a focus on integrating large language models, vector stores, and advanced context management.
 
+## Author
+
+**Yavuz Topsever** - Data Consultant  
+Munich, Germany
+
+### Contact & Links
+- Email: yavuz.topsever@windowslive.com
+- Phone: +49 162 7621469
+- [GitHub](https://github.com/yavuztopsever)
+- [LinkedIn](https://www.linkedin.com/in/yavuztopsever)
+
+### Professional Background
+- **Current**: Trainee at QA Team, PagoNxt Merchant Solutions (Munich)
+- **Previous**: Working Student at Group Risk Reporting Team, Allianz SE (Munich)
+- **Education**: Mathematical Engineering, Bachelor's Degree - Yildiz Technical University (YTU)
+
+### Technical Expertise
+- **Languages**: Python, Java, JavaScript
+- **ML/AI**: PyTorch, Scikit-learn, CNNs, RNNs, Transformers
+- **NLP/Graphs**: NLTK, LangChain, LangGraph, Graph Neural Networks (GNNs)
+- **Backend**: FastAPI, RESTful API Design, SQLite, Redis
+- **DevOps**: Docker, CI/CD, Pytest
+- **Languages**: English (Fluent), German (Beginner), French (Proficient), Turkish (Native)
+
 ## Features
 
 - **Advanced Workflow Management**: Build complex AI workflows with graph-based task execution
