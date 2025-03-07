@@ -44,6 +44,7 @@ logs/
 storage/vector_store/
 storage/memory/
 vector_store/
+models/
 
 # Test data
 tests/unit/vector_store/test_data/
