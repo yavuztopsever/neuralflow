@@ -7,11 +7,11 @@ import os
 import logging
 import uvicorn
 from pathlib import Path
-from config.manager import ConfigManager
-from utils.logging.manager import LogManager
-from utils.common.hardware import HardwareManager
-from core.api import APIManager
-from ui.app import NeuralFlowUI
+from neuralflow.config.manager import ConfigManager
+from neuralflow.utils.logging.manager import LogManager
+from neuralflow.utils.common.hardware import HardwareManager
+from neuralflow.core.api import APIManager
+from neuralflow.ui.app import NeuralFlowUI
 
 def main():
     """Initialize and run the application."""
@@ -29,7 +29,7 @@ def main():
         hardware_manager.log_hardware_info()
         
         # Create necessary directories
-        storage_dir = Path(config.get('storage_dir', 'storage'))
+        storage_dir = Path(config.get('storage_dir', 'src/storage'))
         storage_dir.mkdir(parents=True, exist_ok=True)
         
         # Initialize API with hardware settings

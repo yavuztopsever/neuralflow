@@ -1,13 +1,22 @@
+"""
+Mock LLM implementation for testing and development.
+"""
+
 import os
 import logging
 import asyncio
 from typing import Optional, Dict, Any, List, Union
+from datetime import datetime
 
-class MockLLM:
+from core.models.base_model import BaseNamedModel
+from core.models.implementations.llm.base import BaseLLM
+
+class MockLLM(BaseNamedModel, BaseLLM):
     """Mock LLM for testing and development without requiring a real model."""
     
     def __init__(
         self, 
+        name: str,
         model_path: str = "mock_model.gguf",
         temperature: float = 0.7,
         max_tokens: int = 512,
@@ -17,9 +26,11 @@ class MockLLM:
         verbose: bool = False,
         n_gpu_layers: int = 0,
         n_threads: Optional[int] = None,
-        n_batch: int = 8
+        n_batch: int = 8,
+        description: Optional[str] = None
     ):
         """Initialize a mock LLM that returns predetermined responses."""
+        super().__init__(name=name, description=description)
         self.model_path = model_path
         self.temperature = temperature
         self.max_tokens = max_tokens
@@ -30,6 +41,7 @@ class MockLLM:
         self.n_gpu_layers = n_gpu_layers
         self.n_threads = n_threads
         self.n_batch = n_batch
+        self.last_used: Optional[datetime] = None
         
         # Predefined response patterns
         self.responses = {
@@ -79,15 +91,16 @@ class MockLLM:
         }
         
         # Log initialization
-        logging.info(f"Initialized Mock LLM in place of: {model_path}")
+        logging.info(f"Initialized Mock LLM '{name}' in place of: {model_path}")
         
-    def generate(
+    async def generate(
         self, 
         prompt: str, 
         temperature: Optional[float] = None, 
         max_tokens: Optional[int] = None,
         top_p: Optional[float] = None,
-        top_k: Optional[int] = None
+        top_k: Optional[int] = None,
+        **kwargs
     ) -> str:
         """Generate a response from the mock LLM."""
         # Use provided parameters or defaults
@@ -102,12 +115,15 @@ class MockLLM:
         # Check for specific topics first
         for topic, response in self.topic_responses.items():
             if topic in prompt_lower:
+                self.last_used = datetime.now()
                 return response.strip()
         
         # Then check for general patterns
         if "hello" in prompt_lower or "hi" in prompt_lower.split():
+            self.last_used = datetime.now()
             return self.responses["hello"]
         elif "help" in prompt_lower or "assist" in prompt_lower or "what can you" in prompt_lower:
+            self.last_used = datetime.now()
             return """
             I can help you with a variety of tasks:
             
@@ -123,31 +139,18 @@ class MockLLM:
             raise Exception("Mock error generated as requested in prompt")
         else:
             # Create response based on prompt content
+            self.last_used = datetime.now()
             if len(prompt) > 100:
                 extract = prompt[50:100] + "..."
                 return f"I understand you're asking about '{extract}'. Here's what I know: This appears to be a complex query that would require specialized knowledge. If you could provide more specific details about what you're looking for, I'd be happy to try to help further."
             else:
                 return f"Regarding your query about '{prompt[:30]}{'...' if len(prompt) > 30 else ''}', I can provide the following information: This seems to be a specific question that I'd need more context on. Could you elaborate on what specifically you'd like to know about this topic?"
     
-    async def agenerate(
-        self, 
-        prompt: str, 
-        temperature: Optional[float] = None, 
-        max_tokens: Optional[int] = None,
-        top_p: Optional[float] = None,
-        top_k: Optional[int] = None
-    ) -> str:
-        """Asynchronous version of generate for async compatbility."""
-        # Add a small delay to simulate processing time
-        await asyncio.sleep(0.5)
-        return self.generate(prompt, temperature, max_tokens, top_p, top_k)
-        
+    async def embed(self, text: str) -> list[float]:
+        """Generate mock embeddings for input text."""
+        # Return a mock embedding vector of appropriate size
+        return [0.1] * 1536  # Standard embedding size
+    
     def __call__(self, prompt: str, **kwargs) -> str:
         """Allow calling the model directly."""
-        return self.generate(prompt, **kwargs)
-    
-    async def apredict(self, prompt: str) -> str:
-        """Asynchronous version for LangChain compatibility."""
-        # Add a small delay to simulate processing time
-        await asyncio.sleep(0.5)
-        return self.generate(prompt)
+        return asyncio.run(self.generate(prompt, **kwargs))

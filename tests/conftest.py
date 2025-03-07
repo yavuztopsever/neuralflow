@@ -20,11 +20,11 @@ src_path = project_root / "src"
 sys.path.insert(0, str(src_path))
 
 # Import common test fixtures and utilities
-from src.core.workflow.workflow_manager import WorkflowManager, WorkflowConfig, WorkflowState
-from src.core.services.context.context_handler import ContextHandler
-from src.core.services.response.response_generation import ResponseGenerator
-from src.core.tools.memory.memory_manager import MemoryManager
-from src.core.tools.vector.vector_search import VectorSearch
+from neuralflow.core.workflow.workflow_manager import WorkflowManager, WorkflowConfig, WorkflowState
+from neuralflow.core.services.context.context_handler import ContextHandler
+from neuralflow.core.services.response.response_generation import ResponseGenerator
+from neuralflow.core.tools.memory.memory_manager import MemoryManager
+from neuralflow.core.tools.vector.vector_search import VectorSearch
 
 # Test directories
 TEST_DIR = Path(__file__).parent
@@ -39,12 +39,12 @@ DATA_DIR = TEST_DIR / "data"
 def test_config():
     """Provides a test configuration with test-specific paths and settings."""
     config = Config()
-    config.MEMORY_STORE_PATH = "test_memory.db"
-    config.VECTOR_STORE_PATH = "test_vector_store"
-    config.GRAPH_STORE_PATH = "test_graph_store/knowledge_graph.json"
-    config.DOCUMENT_STORE_PATH = "test_documents"
-    config.CHECKPOINTS_PATH = "test_checkpoints"
-    config.MODEL_PATH = "test_models"
+    config.MEMORY_STORE_PATH = "src/storage/test_memory.db"
+    config.VECTOR_STORE_PATH = "src/storage/test_vector_store"
+    config.GRAPH_STORE_PATH = "src/storage/test_graph_store/knowledge_graph.json"
+    config.DOCUMENT_STORE_PATH = "src/storage/test_documents"
+    config.CHECKPOINTS_PATH = "models/test_checkpoints"
+    config.MODEL_PATH = "models/test_models"
     config.DEBUG = True
     config.STATE_SAVE_INTERVAL = 0  # Disable state saving for faster tests
     config.USE_DISTRIBUTED = False
