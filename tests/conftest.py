@@ -11,10 +11,20 @@ from typing import Dict, Any, List, Optional, Tuple
 import tempfile
 from pathlib import Path
 
-# Add project root to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Add the project root directory to the Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
-from config.config import Config
+# Add the src directory to the Python path
+src_path = project_root / "src"
+sys.path.insert(0, str(src_path))
+
+# Import common test fixtures and utilities
+from src.core.workflow.workflow_manager import WorkflowManager, WorkflowConfig, WorkflowState
+from src.core.services.context.context_handler import ContextHandler
+from src.core.services.response.response_generation import ResponseGenerator
+from src.core.tools.memory.memory_manager import MemoryManager
+from src.core.tools.vector.vector_search import VectorSearch
 
 # Test directories
 TEST_DIR = Path(__file__).parent
@@ -349,3 +359,14 @@ def event_loop():
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
+# Export commonly used test fixtures
+__all__ = [
+    'WorkflowManager',
+    'WorkflowConfig',
+    'WorkflowState',
+    'ContextHandler',
+    'ResponseGenerator',
+    'MemoryManager',
+    'VectorSearch'
+]

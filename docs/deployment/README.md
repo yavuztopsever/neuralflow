@@ -1,64 +1,118 @@
 # NeuralFlow Deployment Guide
 
-This section provides comprehensive documentation for deploying NeuralFlow in various environments, including development, staging, and production.
+## Overview
 
-## Table of Contents
+This guide provides comprehensive instructions for deploying NeuralFlow in various environments, from local development to production.
 
-### Deployment Environments
-- [Development Setup](environments/development.md) - Development environment setup
-- [Staging Setup](environments/staging.md) - Staging environment setup
-- [Production Setup](environments/production.md) - Production environment setup
-- [Environment Configuration](environments/config.md) - Environment-specific configuration
+## Deployment Options
 
-### Deployment Methods
-- [Docker Deployment](methods/docker.md) - Container-based deployment
-- [Kubernetes Deployment](methods/kubernetes.md) - Kubernetes orchestration
-- [Manual Deployment](methods/manual.md) - Manual deployment process
-- [CI/CD Deployment](methods/ci_cd.md) - Automated deployment
+### 1. Local Development
+- Docker Compose
+- Direct Python installation
+- Virtual environment
 
-### Infrastructure
-- [Server Requirements](infrastructure/servers.md) - Server specifications
-- [Database Setup](infrastructure/database.md) - Database configuration
-- [Caching Setup](infrastructure/caching.md) - Caching configuration
-- [Monitoring Setup](infrastructure/monitoring.md) - Monitoring configuration
+### 2. Production
+- Kubernetes cluster
+- Docker Swarm
+- Cloud platforms (AWS, GCP, Azure)
 
-### Security
-- [Security Configuration](security/config.md) - Security settings
-- [SSL/TLS Setup](security/ssl.md) - SSL/TLS configuration
-- [Firewall Setup](security/firewall.md) - Firewall configuration
-- [Access Control](security/access.md) - Access control setup
-
-## Deployment Overview
+## Prerequisites
 
 ### System Requirements
-- Python 3.8 or higher
-- Redis 6.0 or higher
-- PostgreSQL 12 or higher
-- Docker (optional)
-- Kubernetes (optional)
-
-### Infrastructure Requirements
 - CPU: 4+ cores
 - RAM: 8GB+
 - Storage: 50GB+
-- Network: 100Mbps+
+- OS: Linux (Ubuntu 20.04+ recommended)
 
-## Deployment Methods
+### Software Requirements
+- Docker 20.10+
+- Docker Compose 2.0+
+- Python 3.8+
+- Git
+
+## Local Development Deployment
+
+### 1. Using Docker Compose
+
+```bash
+# Clone repository
+git clone https://github.com/yavuztopsever/neuralflow.git
+cd neuralflow
+
+# Build and start services
+docker-compose up -d
+
+# Check logs
+docker-compose logs -f
+```
+
+### 2. Direct Python Installation
+
+```bash
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run application
+python src/main.py
+```
+
+## Production Deployment
 
 ### 1. Docker Deployment
-```bash
-# Build the image
-docker build -t yavuztopsever/neuralflow:latest .
 
-# Run the container
-docker run -d \
-  -p 8000:8000 \
-  -e OPENAI_API_KEY=your-key \
-  -e REDIS_URL=redis://redis:6379 \
-  yavuztopsever/neuralflow:latest
+#### Build Docker Image
+```bash
+# Build image
+docker build -t neuralflow:latest .
+
+# Push to registry
+docker tag neuralflow:latest your-registry/neuralflow:latest
+docker push your-registry/neuralflow:latest
+```
+
+#### Docker Compose Production
+```yaml
+version: '3.8'
+
+services:
+  neuralflow:
+    image: neuralflow:latest
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://user:pass@db:5432/neuralflow
+      - REDIS_URL=redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=neuralflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
 ```
 
 ### 2. Kubernetes Deployment
+
+#### Deployment Configuration
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -76,185 +130,230 @@ spec:
     spec:
       containers:
       - name: neuralflow
-        image: yavuztopsever/neuralflow:latest
+        image: neuralflow:latest
         ports:
         - containerPort: 8000
         env:
-        - name: OPENAI_API_KEY
+        - name: ENVIRONMENT
+          value: "production"
+        - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
               name: neuralflow-secrets
-              key: openai-api-key
+              key: database-url
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
 ```
 
-### 3. Manual Deployment
-1. Clone repository
-2. Install dependencies
-3. Configure environment
-4. Start services
-5. Run migrations
-6. Start application
+#### Service Configuration
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: neuralflow
+spec:
+  selector:
+    app: neuralflow
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: LoadBalancer
+```
 
-## Environment Configuration
+### 3. Cloud Platform Deployment
 
-### Development Environment
+#### AWS ECS Deployment
 ```bash
-# .env.development
-DEBUG=True
-DATABASE_URL=postgresql://user:pass@localhost:5432/neuralflow_dev
-REDIS_URL=redis://localhost:6379
+# Create ECS cluster
+aws ecs create-cluster --cluster-name neuralflow-cluster
+
+# Create task definition
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+# Create service
+aws ecs create-service --cluster neuralflow-cluster --service-name neuralflow --task-definition neuralflow
 ```
 
-### Staging Environment
+#### GCP Cloud Run Deployment
 ```bash
-# .env.staging
-DEBUG=False
-DATABASE_URL=postgresql://user:pass@staging-db/neuralflow_staging
-REDIS_URL=redis://staging-redis:6379
+# Build and push container
+gcloud builds submit --tag gcr.io/your-project/neuralflow
+
+# Deploy to Cloud Run
+gcloud run deploy neuralflow \
+  --image gcr.io/your-project/neuralflow \
+  --platform managed \
+  --region your-region
 ```
 
-### Production Environment
+## Configuration
+
+### Environment Variables
 ```bash
-# .env.production
-DEBUG=False
-DATABASE_URL=postgresql://user:pass@prod-db/neuralflow_prod
-REDIS_URL=redis://prod-redis:6379
+# Required
+ENVIRONMENT=production
+DATABASE_URL=postgresql://user:pass@db:5432/neuralflow
+REDIS_URL=redis://redis:6379/0
+
+# Optional
+LOG_LEVEL=INFO
+API_KEY=your-api-key
+MAX_WORKERS=4
 ```
 
-## Infrastructure Setup
+### Security Configuration
 
-### Database Setup
-1. Install PostgreSQL
-2. Create database
-3. Run migrations
-4. Configure backup
-5. Set up monitoring
+#### SSL/TLS Setup
+```nginx
+server {
+    listen 443 ssl;
+    server_name your-domain.com;
 
-### Redis Setup
-1. Install Redis
-2. Configure persistence
-3. Set up replication
-4. Configure monitoring
-5. Set up backup
+    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
 
-### Monitoring Setup
-1. Install monitoring tools
-2. Configure alerts
-3. Set up dashboards
-4. Configure logging
-5. Set up tracing
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
 
-## Security Configuration
+#### Authentication
+```python
+# JWT Configuration
+JWT_SECRET_KEY = "your-secret-key"
+JWT_ALGORITHM = "HS256"
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
+```
 
-### SSL/TLS Setup
-1. Obtain certificates
-2. Configure web server
-3. Set up auto-renewal
-4. Configure security headers
-5. Enable HTTPS
+## Monitoring
 
-### Firewall Configuration
-1. Configure firewall rules
-2. Set up VPN
-3. Configure access control
-4. Set up monitoring
-5. Configure alerts
+### 1. Logging Setup
+```python
+import logging
 
-## Deployment Process
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('neuralflow.log'),
+        logging.StreamHandler()
+    ]
+)
+```
 
-### Pre-deployment Checklist
-1. Review changes
-2. Run tests
-3. Check dependencies
-4. Verify configuration
-5. Backup data
+### 2. Metrics Collection
+```python
+from prometheus_client import Counter, Histogram
 
-### Deployment Steps
-1. Stop services
-2. Update code
-3. Run migrations
-4. Start services
-5. Verify deployment
+# Define metrics
+request_counter = Counter('http_requests_total', 'Total HTTP requests')
+request_latency = Histogram('http_request_duration_seconds', 'HTTP request latency')
+```
 
-### Post-deployment Checklist
-1. Check logs
-2. Verify functionality
-3. Monitor performance
-4. Check security
-5. Update documentation
+### 3. Health Checks
+```python
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "database": check_database(),
+        "redis": check_redis(),
+        "version": "1.0.0"
+    }
+```
 
-## Monitoring and Maintenance
+## Backup and Recovery
 
-### System Monitoring
-- CPU usage
-- Memory usage
-- Disk usage
-- Network traffic
-- Application metrics
+### 1. Database Backup
+```bash
+# Backup PostgreSQL database
+pg_dump -U user -d neuralflow > backup.sql
 
-### Log Management
-- Application logs
-- System logs
-- Access logs
-- Error logs
-- Audit logs
+# Restore from backup
+psql -U user -d neuralflow < backup.sql
+```
 
-### Backup and Recovery
-- Database backup
-- Configuration backup
-- Log backup
-- Recovery procedures
-- Disaster recovery
+### 2. Configuration Backup
+```bash
+# Backup configuration files
+tar -czf config_backup.tar.gz config/
 
-### Performance Optimization
-- Load balancing
-- Caching
-- Database optimization
-- Network optimization
-- Application optimization
+# Restore configuration
+tar -xzf config_backup.tar.gz
+```
+
+## Scaling
+
+### 1. Horizontal Scaling
+```bash
+# Scale Docker Compose services
+docker-compose up -d --scale neuralflow=3
+
+# Scale Kubernetes deployment
+kubectl scale deployment neuralflow --replicas=3
+```
+
+### 2. Load Balancing
+```yaml
+# Nginx load balancer configuration
+upstream neuralflow {
+    least_conn;
+    server neuralflow1:8000;
+    server neuralflow2:8000;
+    server neuralflow3:8000;
+}
+```
 
 ## Troubleshooting
 
 ### Common Issues
-- Service startup
-- Database connection
-- Redis connection
-- Network issues
-- Performance issues
 
-### Debugging Tools
-- Log analysis
-- Performance profiling
-- Network analysis
-- Database analysis
-- System monitoring
+1. **Database Connection Issues**
+   - Check database credentials
+   - Verify network connectivity
+   - Check database logs
 
-### Recovery Procedures
-- Service restart
-- Database recovery
-- Cache recovery
-- Configuration recovery
-- Data recovery
+2. **Memory Issues**
+   - Monitor memory usage
+   - Adjust worker count
+   - Check for memory leaks
 
-## Support and Resources
+3. **Performance Issues**
+   - Monitor response times
+   - Check resource usage
+   - Optimize database queries
 
-### Internal Resources
-- Deployment wiki
-- Configuration guide
-- Troubleshooting guide
-- Monitoring guide
-- Security guide
+### Debug Tools
 
-### External Resources
-- Docker documentation
-- Kubernetes documentation
-- PostgreSQL documentation
-- Redis documentation
-- Monitoring documentation
+1. **Log Analysis**
+```bash
+# View application logs
+docker-compose logs -f neuralflow
 
-### Getting Help
-- Check documentation
-- Contact support
-- Review logs
-- Check monitoring
-- Create issue 
+# View database logs
+docker-compose logs -f db
+```
+
+2. **Resource Monitoring**
+```bash
+# Monitor container resources
+docker stats
+
+# Monitor Kubernetes resources
+kubectl top pods
+```
+
+## Support
+
+For deployment support:
+- Email: deploy@neuralflow.com
+- Documentation: https://docs.neuralflow.com/deployment
+- GitHub Issues: https://github.com/neuralflow/neuralflow/issues 

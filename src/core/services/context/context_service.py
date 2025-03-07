@@ -1,3 +1,8 @@
+"""
+Context service for the LangGraph project.
+This module provides context management capabilities.
+"""
+
 import json
 import redis
 import torch
@@ -10,16 +15,15 @@ from heapq import nlargest
 from typing import Dict, Any, List, Optional, Union
 from sentence_transformers import SentenceTransformer, util
 from transformers import pipeline, AutoModelForSequenceClassification, AutoTokenizer
-from config.config import Config
+from ...config.config import Config
 
-from tools.memory_manager import MemoryManager
-from tools.vector_search import VectorSearch
-from tools.graph_search import GraphSearch
-from tools.document_handler import DocumentHandler
-from tools.function_caller import FunctionCaller  # Ensure this import is correct
-from models.model_manager import ModelManager
-from config.config import Config
-from tools.utils.error_handling import with_error_handling
+from ...tools.memory_manager import MemoryManager
+from ...tools.vector_search import VectorSearch
+from ...tools.graph_search import GraphSearch
+from ...tools.document_handler import DocumentHandler
+from ...tools.function_caller import FunctionCaller
+from ...models.model_manager import ModelManager
+from ...tools.utils.error_handling import with_error_handling
 
 # Initialize lock for cache operations
 cache_lock = threading.Lock()

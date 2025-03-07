@@ -1,196 +1,230 @@
-# NeuralFlow Architecture Documentation
+# NeuralFlow Architecture
 
-This section provides comprehensive documentation about the NeuralFlow system architecture, design principles, and implementation details.
+## System Overview
 
-## Table of Contents
+NeuralFlow is built on a modular, event-driven architecture that enables flexible and scalable AI workflow management. The system is designed to handle complex AI operations while maintaining high performance and reliability.
 
-### System Overview
-- [Architecture Overview](overview.md) - High-level system architecture
-- [Design Principles](principles.md) - Core design principles and decisions
-- [System Components](components.md) - Main system components and their interactions
+## Core Components
 
-### Core Components
-- [Graph Workflow](workflow.md) - Graph-based workflow system
-- [Memory System](memory.md) - Multi-level memory management
-- [Context Management](context.md) - Context handling and processing
-- [Response Generation](response.md) - Response generation system
+### 1. Core Engine
 
-### Integration Points
-- [LangChain Integration](langchain.md) - LangChain integration architecture
-- [Vector Store Integration](vector_store.md) - Vector store integration
-- [Web Search Integration](web_search.md) - Web search integration
+The core engine (`src/core/`) is the heart of NeuralFlow, consisting of:
+- Workflow engine (`workflow/`)
+- State management (`state/`)
+- Graph processing (`graph/`)
+- Context management (`context/`)
+- Event system (`events/`)
+- Tool management (`tools/`)
+- Service layer (`services/`)
 
-### Data Flow
-- [Request Flow](flows/request.md) - Request processing flow
-- [Memory Flow](flows/memory.md) - Memory management flow
-- [Context Flow](flows/context.md) - Context processing flow
-- [Response Flow](flows/response.md) - Response generation flow
+```mermaid
+graph TD
+    A[Core Engine] --> B[Workflow Engine]
+    A --> C[State Manager]
+    A --> D[Graph Processor]
+    A --> E[Context Manager]
+    A --> F[Event System]
+    A --> G[Tool Manager]
+    A --> H[Service Layer]
+```
 
-### System Design
-- [Scalability](design/scalability.md) - Scalability considerations
-- [Security](design/security.md) - Security architecture
-- [Performance](design/performance.md) - Performance optimization
-- [Monitoring](design/monitoring.md) - System monitoring
+### 2. Data Management
 
-## Architecture Overview
+The data management system includes:
+- Vector store (`src/vector_store/`)
+- Graph store (`src/graph_store/`)
+- Memory system (`src/memory/`)
+- Storage system (`src/storage/`)
+- Data processing (`src/data/`)
 
-NeuralFlow implements a sophisticated graph-based workflow system with the following key architectural components:
+### 3. Infrastructure
 
-### 1. Graph Workflow System
-- **Nodes**: Processing units for specific tasks
-- **Edges**: Connections defining data flow
-- **Workflows**: Orchestration of nodes and edges
-- **Execution Engine**: Workflow execution and management
+The infrastructure layer (`src/infrastructure/`) provides:
+- Configuration management
+- Logging system
+- Monitoring
+- Deployment tools
 
-### 2. Memory Management System
-- **Short-term Memory**: Recent context and session data
-- **Mid-term Memory**: Session-level information
-- **Long-term Memory**: Historical data and knowledge
-- **Vector Storage**: Semantic search capabilities
+### 4. UI Layer
 
-### 3. Context Management System
-- **Context Aggregation**: Gathering context from multiple sources
-- **Context Processing**: Processing and filtering context
-- **Context Storage**: Storing and retrieving context
-- **Context Optimization**: Optimizing context for processing
+The UI layer (`src/ui/`) provides:
+- User interface components
+- Visualization tools
+- Interactive workflow builder
 
-### 4. Response Generation System
-- **Response Assembly**: Building responses from components
-- **Style Management**: Managing response style and format
-- **Quality Control**: Ensuring response quality
-- **Delivery System**: Response delivery and formatting
+### 5. API Layer
 
-## Design Principles
+The API layer (`src/api/`) provides:
+- RESTful endpoints
+- WebSocket support
+- Authentication
+- Rate limiting
 
-The system is built on the following core principles:
+## Data Flow
 
-1. **Modularity**
-   - Independent components
-   - Clear interfaces
-   - Easy extension
+```mermaid
+sequenceDiagram
+    participant Client
+    participant UI/API
+    participant Core
+    participant Data
+    participant Storage
+    
+    Client->>UI/API: Request
+    UI/API->>Core: Process Request
+    Core->>Data: Process Data
+    Data->>Storage: Store/Retrieve
+    Storage-->>Data: Data
+    Data-->>Core: Processed Data
+    Core-->>UI/API: Result
+    UI/API-->>Client: Response
+```
 
-2. **Scalability**
-   - Horizontal scaling
-   - Load balancing
-   - Resource optimization
+## Component Details
 
-3. **Reliability**
-   - Fault tolerance
-   - Error handling
-   - Recovery mechanisms
+### Core Engine
 
-4. **Security**
-   - Authentication
-   - Authorization
-   - Data protection
+The core engine provides:
+- Workflow execution and management
+- State persistence and management
+- Graph-based data processing
+- Context management
+- Event-driven architecture
+- Tool integration
+- Service orchestration
 
-## System Components
+### Data Management
 
-### Core Components
-- Graph Workflow Engine
-- Memory Management System
-- Context Processing System
-- Response Generation System
+The data management system includes:
+- Vector store for embeddings and similarity search
+- Graph store for relationship management
+- Memory system for context and state
+- Storage system for data persistence
+- Data processing pipeline
 
-### Supporting Components
-- Authentication System
-- Rate Limiting System
-- Monitoring System
-- Logging System
+### Infrastructure
 
-## Integration Architecture
+The infrastructure layer provides:
+- Configuration management
+- Logging and monitoring
+- Deployment tools
+- Development environment setup
 
-### External Systems
-- LangChain Integration
-- Vector Store Integration
-- Web Search Integration
-- Custom Integrations
+### UI Layer
 
-### Internal Systems
-- Memory Management
-- Context Processing
-- Response Generation
-- Workflow Management
+The UI layer provides:
+- Interactive workflow builder
+- Visualization tools
+- User interface components
+- Real-time monitoring
 
-## Data Flow Architecture
+### API Layer
 
-### Request Processing
-1. Request Reception
-2. Authentication & Validation
-3. Rate Limiting
-4. Input Processing
-5. Workflow Execution
-6. Response Generation
-7. Response Delivery
+The API layer provides:
+- RESTful endpoints
+- WebSocket support
+- Authentication
+- Rate limiting
 
-### Memory Management
-1. Memory Retrieval
-2. Context Processing
-3. Memory Update
-4. Memory Cleanup
+## Security Architecture
 
-### Context Processing
-1. Context Gathering
-2. Context Filtering
-3. Context Optimization
-4. Context Storage
+### Authentication
+- JWT-based authentication
+- Role-based access control
+- API key management
 
-## System Design Considerations
+### Data Security
+- End-to-end encryption
+- Secure storage
+- Data isolation
+
+### Network Security
+- TLS/SSL encryption
+- Rate limiting
+- DDoS protection
+
+## Deployment Architecture
+
+### Development Environment
+- Local development setup
+- Docker containers
+- Development tools
+
+### Production Environment
+- Kubernetes cluster
+- Load balancing
+- Auto-scaling
+- Monitoring
+
+## Performance Considerations
+
+### Caching Strategy
+- Multi-level caching
+- Cache invalidation
+- Cache warming
 
 ### Scalability
-- Horizontal Scaling
-- Load Balancing
-- Resource Management
-- Performance Optimization
-
-### Security
-- Authentication
-- Authorization
-- Data Protection
-- Access Control
-
-### Performance
-- Response Time
-- Resource Usage
-- Optimization
-- Caching
+- Horizontal scaling
+- Load balancing
+- Resource optimization
 
 ### Monitoring
-- System Health
-- Performance Metrics
-- Error Tracking
-- Usage Statistics
+- Metrics collection
+- Logging
+- Alerting
 
-## Implementation Guidelines
+## Development Guidelines
 
 ### Code Organization
-- Modular Structure
-- Clear Interfaces
-- Consistent Patterns
-- Documentation
+```
+src/
+├── api/              # API endpoints
+├── config/           # Configuration management
+├── core/             # Core functionality
+│   ├── workflow/     # Workflow engine
+│   ├── state/        # State management
+│   ├── graph/        # Graph processing
+│   ├── context/      # Context management
+│   ├── events/       # Event system
+│   ├── tools/        # Tool management
+│   └── services/     # Service layer
+├── data/             # Data processing
+├── graph_store/      # Graph storage
+├── infrastructure/   # Infrastructure components
+├── logs/             # Logging system
+├── memory/           # Memory management
+├── models/           # Data models
+├── neuralflow/       # Main package
+├── services/         # Business services
+├── storage/          # Storage system
+├── ui/               # User interface
+├── utils/            # Utility functions
+└── vector_store/     # Vector storage
+```
 
 ### Testing Strategy
-- Unit Testing
-- Integration Testing
-- Performance Testing
-- Security Testing
+- Unit tests
+- Integration tests
+- Performance tests
+- Security tests
 
-### Deployment Strategy
-- Containerization
-- Orchestration
-- Monitoring
-- Scaling
-
-## Future Considerations
+## Future Architecture
 
 ### Planned Improvements
-- Enhanced Scalability
-- Advanced Features
-- Performance Optimization
-- Security Enhancements
+- Enhanced workflow visualization
+- Advanced monitoring
+- Improved scaling
+- Additional tool integrations
 
 ### Roadmap
-- Short-term Goals
-- Medium-term Goals
-- Long-term Goals
-- Research Areas 
+1. Workflow optimization
+2. Enhanced security features
+3. Advanced analytics
+4. Extended tool support
+
+## Support
+
+For architecture-related questions:
+- Email: architecture@neuralflow.com
+- Documentation: https://docs.neuralflow.com/architecture
+- GitHub Issues: https://github.com/neuralflow/neuralflow/issues 

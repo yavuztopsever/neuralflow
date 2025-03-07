@@ -1,10 +1,137 @@
 # Response Generation System Documentation
 
-This document provides detailed information about the LangGraph response generation system, including its components, processing, and integration with workflows.
+This document provides detailed information about the NeuralFlow response generation system, including its components, processing, and integration with workflows.
 
 ## Overview
 
-The LangGraph response generation system handles the creation, formatting, and delivery of AI-generated responses, ensuring high quality and relevance.
+The NeuralFlow response generation system handles the creation and delivery of AI-generated responses using LangChain's chain-based architecture. It ensures high-quality responses by integrating context, task results, and conversation history.
+
+## Core Components
+
+### 1. Response Generation Chain
+
+The response generation is implemented using LangChain's chain composition:
+
+```python
+def _create_workflow_chain(self):
+    # Create response generation chain
+    response_prompt = ChatPromptTemplate.from_messages([
+        SystemMessage(content="You are a helpful assistant that generates final responses."),
+        MessagesPlaceholder(variable_name="chat_history"),
+        HumanMessage(content="Query: {query}\nContext: {context}\nTask Result: {task_result}")
+    ])
+    
+    response_chain = response_prompt | self.llm | StrOutputParser()
+    
+    # Combine chains using LCEL
+    return (
+        RunnablePassthrough.assign(
+            context=context_chain,
+            task_result=task_chain
+        )
+        | response_chain
+    )
+```
+
+### 2. Response State
+
+The response state is managed through the workflow state:
+
+```python
+class WorkflowState(BaseModel):
+    user_query: str = ""
+    retrieved_context: Dict[str, Any] = Field(default_factory=dict)
+    execution_result: Dict[str, Any] = Field(default_factory=dict)
+    final_response: Optional[str] = None
+    error: Optional[str] = None
+```
+
+## Response Generation Process
+
+### 1. Input Processing
+- Receive user query
+- Initialize workflow state
+- Set up conversation context
+
+### 2. Context Integration
+- Retrieve relevant context
+- Process task results
+- Access conversation history
+
+### 3. Response Generation
+- Generate response using LangChain chain
+- Process and format response
+- Update conversation memory
+
+### 4. Output Delivery
+- Return final response
+- Handle errors gracefully
+- Support progress tracking
+
+## Response Features
+
+### 1. Context-Aware Generation
+- Uses retrieved context
+- Incorporates task results
+- Maintains conversation history
+
+### 2. Error Handling
+- Graceful error recovery
+- Error reporting
+- State preservation
+
+### 3. Progress Tracking
+- Real-time progress updates
+- Status monitoring
+- Execution tracking
+
+## Response Integration
+
+### 1. Workflow Integration
+- Integrated with workflow nodes
+- Supports state management
+- Enables context sharing
+
+### 2. LangChain Integration
+- Uses LangChain chains
+- Supports conversation memory
+- Enables chain composition
+
+### 3. Tool Integration
+- Supports tool execution
+- Maintains tool results
+- Enables result reuse
+
+## Best Practices
+
+### 1. Response Generation
+- Use appropriate prompts
+- Maintain context relevance
+- Ensure response quality
+
+### 2. Performance
+- Optimize generation speed
+- Implement efficient processing
+- Monitor performance
+
+### 3. Error Handling
+- Handle errors gracefully
+- Provide clear error messages
+- Maintain system stability
+
+### 4. Maintenance
+- Regular quality checks
+- Performance optimization
+- Security updates
+
+## Future Improvements
+
+Planned enhancements include:
+- Enhanced response formatting
+- Advanced context integration
+- Improved error handling
+- Better progress tracking
+- Extended tool support
 
 ## Response Types
 
@@ -97,54 +224,6 @@ The LangGraph response generation system handles the creation, formatting, and d
 - **Optimize Response**: Improve performance
 - **Monitor Response**: Track usage
 
-## Response Integration
-
-### 1. Workflow Integration
-```python
-# Example workflow with response generation
-workflow = {
-    "nodes": [
-        {
-            "id": "response",
-            "type": "response",
-            "config": {
-                "type": "text",
-                "options": {
-                    "style": "formal",
-                    "max_length": 500
-                }
-            }
-        }
-    ]
-}
-```
-
-### 2. Context Integration
-- **Context Usage**: Use context in generation
-- **Context Adaptation**: Adapt to context
-- **Context Validation**: Validate against context
-- **Context Enhancement**: Enhance with context
-
-## Response Management
-
-### 1. Quality Management
-- **Quality Control**: Ensure response quality
-- **Validation**: Validate responses
-- **Testing**: Test response generation
-- **Monitoring**: Track quality metrics
-
-### 2. Performance Management
-- **Generation Speed**: Optimize generation
-- **Resource Usage**: Manage resources
-- **Caching**: Implement caching
-- **Load Balancing**: Distribute load
-
-### 3. Security Management
-- **Content Filtering**: Filter sensitive content
-- **Access Control**: Manage permissions
-- **Audit Logging**: Track operations
-- **Compliance**: Ensure compliance
-
 ## Response APIs
 
 ### 1. Generation API
@@ -193,32 +272,6 @@ translated = api.translate_response(response.id, {
     }
 })
 ```
-
-## Best Practices
-
-### 1. Response Design
-- Choose appropriate response types
-- Set reasonable length limits
-- Use consistent formatting
-- Include relevant metadata
-
-### 2. Performance
-- Optimize generation speed
-- Implement efficient processing
-- Use caching effectively
-- Monitor performance
-
-### 3. Security
-- Filter sensitive content
-- Implement access controls
-- Monitor usage patterns
-- Regular security audits
-
-### 4. Maintenance
-- Regular quality checks
-- Performance optimization
-- Security updates
-- Documentation updates
 
 ## SDK Examples
 

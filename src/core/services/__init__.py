@@ -1,19 +1,76 @@
 """
-Core services for LangGraph.
+Services package for the LangGraph project.
+This package provides all core service capabilities.
 """
 
-from .graph_service import GraphService
-from .workflow_service import WorkflowService
-from .state_service import StateService
-from .tool_service import ToolService
-from .llm_service import LLMService
-from .embedding_service import EmbeddingService
+# Core services
+from .core import (
+    BaseService,
+    BaseHistoryEntry,
+    StateService,
+    MonitoringService,
+    Metric,
+    Event
+)
+
+# Processing services
+from .processing import (
+    EmbeddingService,
+    LLMService,
+    ToolService
+)
+
+# Storage services
+from .storage import (
+    EngineService,
+    Document,
+    Note
+)
+
+# Security services
+from .security import (
+    AuthService,
+    User,
+    Token,
+    RateLimitService,
+    RateLimit,
+    ValidationService
+)
+
+# Workflow services
+from .workflow import (
+    WorkflowService,
+    GraphService
+)
 
 __all__ = [
-    'GraphService',
-    'WorkflowService',
+    # Core
+    'BaseService',
+    'BaseHistoryEntry',
     'StateService',
-    'ToolService',
+    'MonitoringService',
+    'Metric',
+    'Event',
+    
+    # Processing
+    'EmbeddingService',
     'LLMService',
-    'EmbeddingService'
+    'ToolService',
+    
+    # Storage
+    'EngineService',
+    'Document',
+    'Note',
+    
+    # Security
+    'AuthService',
+    'User',
+    'Token',
+    'RateLimitService',
+    'RateLimit',
+    'ValidationService',
+    
+    # Workflow
+    'WorkflowService',
+    'GraphService'
 ]

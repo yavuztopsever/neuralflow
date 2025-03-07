@@ -12,16 +12,16 @@ from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langchain.schema.runnable import RunnablePassthrough
 from langchain.schema.output_parser import StrOutputParser
-from langchain.schema.prompt import ChatPromptTemplate, MessagesPlaceholder
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.memory import ConversationBufferMemory
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain.tools import Tool
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.schema import SystemMessage, HumanMessage, AIMessage
 
 from ...config.langchain_config import LangChainConfig, LangChainManager
 from ..tools.langchain_tools import LangChainTools
-from ..utils.logging import get_logger
+from ..utils.logging_manager import get_logger
 from ..utils.state_manager import StateManager
 
 logger = get_logger(__name__)

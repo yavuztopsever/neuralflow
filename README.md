@@ -24,20 +24,40 @@ Munich, Germany
 ## Features
 
 - **Advanced Workflow Management**: Build complex AI workflows with graph-based task execution
-- **LLM Integration**: Seamless integration with various LLM providers
-- **Vector Store Support**: Built-in support for efficient vector storage and retrieval
+- **LLM Integration**: Seamless integration with various LLM providers through LangChain
+- **Vector Store Support**: Built-in support for efficient vector storage and retrieval using FAISS and ChromaDB
 - **Context Management**: Sophisticated context handling for maintaining conversation state
 - **Extensible Architecture**: Easy-to-extend architecture for custom implementations
 - **Security First**: Built-in security features including rate limiting and authentication
 - **Performance Optimized**: Efficient caching and state management
+- **Graph-Based Storage**: Advanced graph store for complex relationship management
+- **Memory Management**: Sophisticated memory systems for context retention
+- **UI Components**: Built-in UI components for workflow visualization and management
 
-## Installation
+## Project Structure
 
-```bash
-pip install -r requirements.txt
+```
+neuralflow/
+├── src/
+│   ├── api/           # API endpoints and routes
+│   ├── core/          # Core functionality
+│   ├── data/          # Data processing modules
+│   ├── graph_store/   # Graph storage implementation
+│   ├── memory/        # Memory management systems
+│   ├── models/        # Data models and schemas
+│   ├── services/      # Business logic services
+│   ├── storage/       # Storage implementations
+│   ├── ui/           # User interface components
+│   ├── utils/        # Utility functions
+│   └── vector_store/ # Vector storage implementations
+├── tests/            # Test suite
+├── docs/            # Documentation
+├── examples/        # Example implementations
+├── config/         # Configuration files
+└── scripts/        # Utility scripts
 ```
 
-## Quick Start
+## Installation
 
 1. Clone the repository:
 ```bash
@@ -45,20 +65,42 @@ git clone https://github.com/yavuztopsever/neuralflow.git
 cd neuralflow
 ```
 
-2. Install dependencies:
+2. Create and activate a virtual environment:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set up configuration:
+4. Set up configuration:
 ```bash
 cp .env.example .env
 # Edit .env with your settings
 ```
 
-4. Run the application:
+## Quick Start
+
+1. Start the application:
 ```bash
 python src/main.py
+```
+
+2. Access the API documentation at `http://localhost:8000/docs`
+
+## Development Setup
+
+For development, install additional dependencies:
+```bash
+pip install -r requirements-dev.txt
+```
+
+Run tests:
+```bash
+pytest
 ```
 
 ## Documentation

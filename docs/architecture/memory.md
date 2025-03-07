@@ -1,10 +1,147 @@
 # Memory System Documentation
 
-This document provides detailed information about the LangGraph memory system, including its components, management, and integration with workflows.
+This document provides detailed information about the NeuralFlow memory system, including its components, management, and integration with workflows.
 
 ## Overview
 
-The LangGraph memory system implements a multi-level memory architecture that enables efficient storage, retrieval, and management of information across different time scales and contexts.
+The NeuralFlow memory system implements a conversation-based memory architecture that integrates with LangChain's memory management system. It provides efficient storage and retrieval of conversation history and context.
+
+## Core Components
+
+### 1. Conversation Memory
+
+The conversation memory system is built on LangChain's `ConversationBufferMemory`:
+
+```python
+from langchain.memory import ConversationBufferMemory
+
+class WorkflowManager:
+    def __init__(self, config: Optional[WorkflowConfig] = None):
+        # Initialize memory
+        self.memory = ConversationBufferMemory(
+            return_messages=True,
+            memory_key="chat_history"
+        )
+```
+
+### 2. State Management
+
+The workflow state includes memory-related fields:
+
+```python
+class WorkflowState(BaseModel):
+    memory: List[Dict[str, Any]] = Field(default_factory=list)
+    thinking: List[str] = Field(default_factory=list)
+    conversation_id: Optional[str] = None
+```
+
+## Memory Operations
+
+### 1. Message Storage
+
+Messages are stored in the conversation memory:
+
+```python
+# Add user message to memory
+self.memory.chat_memory.add_user_message(user_query)
+
+# Add AI message to memory
+self.memory.chat_memory.add_ai_message(response)
+```
+
+### 2. Context Management
+
+Context is managed through the workflow state:
+
+```python
+# Store context in state
+state["retrieved_context"] = {
+    "search_results": context,
+    "context_processed": True
+}
+```
+
+### 3. Memory Integration
+
+Memory is integrated into the workflow chain:
+
+```python
+def _create_workflow_chain(self):
+    # Create prompts with memory
+    context_prompt = ChatPromptTemplate.from_messages([
+        SystemMessage(content="You are a helpful assistant that retrieves relevant context for queries."),
+        MessagesPlaceholder(variable_name="chat_history"),
+        HumanMessage(content="{query}")
+    ])
+    
+    # Add memory to chain
+    context_chain = context_prompt | self.llm | StrOutputParser()
+```
+
+## Memory Features
+
+### 1. Conversation History
+- Maintains complete conversation history
+- Supports message retrieval
+- Enables context-aware responses
+
+### 2. State Persistence
+- Tracks workflow state
+- Maintains processing flags
+- Stores execution results
+
+### 3. Context Management
+- Stores retrieved context
+- Manages context processing
+- Enables context reuse
+
+## Memory Integration
+
+### 1. Workflow Integration
+- Integrated with workflow nodes
+- Supports state management
+- Enables context sharing
+
+### 2. LangChain Integration
+- Uses LangChain memory system
+- Supports conversation buffers
+- Enables chain integration
+
+### 3. Tool Integration
+- Supports tool execution
+- Maintains tool results
+- Enables result reuse
+
+## Best Practices
+
+### 1. Memory Usage
+- Use appropriate memory keys
+- Maintain clean state
+- Implement proper cleanup
+
+### 2. Performance
+- Optimize memory usage
+- Implement efficient retrieval
+- Monitor memory growth
+
+### 3. Security
+- Secure sensitive data
+- Implement access controls
+- Monitor access patterns
+
+### 4. Maintenance
+- Regular cleanup
+- Performance optimization
+- Security updates
+
+## Future Improvements
+
+Planned enhancements include:
+- Enhanced memory types
+- Advanced context management
+- Improved state persistence
+- Better memory optimization
+- Extended tool support
 
 ## Memory Types
 
@@ -88,52 +225,6 @@ The LangGraph memory system implements a multi-level memory architecture that en
 - **Update Store**: Modify store settings
 - **Optimize Store**: Improve performance
 
-## Memory Integration
-
-### 1. Workflow Integration
-```python
-# Example workflow with memory
-workflow = {
-    "nodes": [
-        {
-            "id": "memory",
-            "type": "memory",
-            "config": {
-                "store_id": "string",
-                "operation": "string",
-                "options": {}
-            }
-        }
-    ]
-}
-```
-
-### 2. Context Integration
-- **Context Retrieval**: Get relevant context
-- **Context Update**: Update with new information
-- **Context Filtering**: Filter relevant context
-- **Context Summarization**: Generate summaries
-
-## Memory Management
-
-### 1. Storage Management
-- **Capacity Management**: Handle storage limits
-- **Cleanup**: Remove expired items
-- **Optimization**: Improve storage efficiency
-- **Backup**: Data backup and recovery
-
-### 2. Performance Management
-- **Caching**: Implement caching strategies
-- **Indexing**: Optimize search performance
-- **Load Balancing**: Distribute load
-- **Monitoring**: Track performance metrics
-
-### 3. Security Management
-- **Access Control**: Manage permissions
-- **Encryption**: Secure data storage
-- **Audit Logging**: Track operations
-- **Compliance**: Ensure data compliance
-
 ## Memory APIs
 
 ### 1. Store Management API
@@ -178,32 +269,6 @@ items = api.get_memory_items(store.id, {
     "ids": ["item1", "item2"]
 })
 ```
-
-## Best Practices
-
-### 1. Memory Design
-- Choose appropriate memory types
-- Set reasonable capacity limits
-- Implement proper cleanup
-- Use meaningful metadata
-
-### 2. Performance
-- Optimize storage usage
-- Implement efficient retrieval
-- Use caching effectively
-- Monitor performance
-
-### 3. Security
-- Secure sensitive data
-- Implement access controls
-- Monitor access patterns
-- Regular security audits
-
-### 4. Maintenance
-- Regular cleanup
-- Performance optimization
-- Security updates
-- Documentation updates
 
 ## SDK Examples
 

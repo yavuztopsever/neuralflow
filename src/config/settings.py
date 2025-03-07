@@ -13,6 +13,56 @@ except ImportError:
     HAS_PSUTIL = False
     logging.warning("psutil not installed. Memory monitoring will be limited.")
 
+def _safe_parse_int(env_var, default_value):
+    """Safely parse an integer from environment variable, stripping any comments."""
+    value = os.getenv(env_var)
+    if value is None:
+        return default_value
+    
+    # Strip any comments or extra spaces
+    try:
+        # Extract just the first part before any #
+        clean_value = value.split('#')[0].strip()
+        return int(clean_value)
+    except (ValueError, AttributeError):
+        logging.warning(f"Could not parse {env_var}={value} as integer. Using default {default_value}")
+        return default_value
+
+def _safe_parse_float(env_var, default_value):
+    """Safely parse a float from environment variable, stripping any comments."""
+    value = os.getenv(env_var)
+    if value is None:
+        return default_value
+    
+    # Strip any comments or extra spaces
+    try:
+        # Extract just the first part before any #
+        clean_value = value.split('#')[0].strip()
+        return float(clean_value)
+    except (ValueError, AttributeError):
+        logging.warning(f"Could not parse {env_var}={value} as float. Using default {default_value}")
+        return default_value
+
+def _safe_parse_bool(env_var, default_value):
+    """Safely parse a boolean from environment variable."""
+    value = os.getenv(env_var)
+    if value is None:
+        return default_value
+        
+    # Get the lowercase clean value
+    clean_value = value.split('#')[0].strip().lower()
+    
+    # Check for truthy values
+    if clean_value in ('true', 'yes', '1', 'y', 'on'):
+        return True
+    # Check for falsy values
+    elif clean_value in ('false', 'no', '0', 'n', 'off'):
+        return False
+    # Default
+    else:
+        logging.warning(f"Could not parse {env_var}={value} as boolean. Using default {default_value}")
+        return default_value
+
 class Config:
     """Configuration settings for NeuralFlow-based agent."""
 
@@ -73,59 +123,6 @@ class Config:
     
     # Redis Configuration
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-    
-    @staticmethod
-    def _safe_parse_int(env_var, default_value):
-        """Safely parse an integer from environment variable, stripping any comments."""
-        value = os.getenv(env_var)
-        if value is None:
-            return default_value
-        
-        # Strip any comments or extra spaces
-        try:
-            # Extract just the first part before any #
-            clean_value = value.split('#')[0].strip()
-            return int(clean_value)
-        except (ValueError, AttributeError):
-            logging.warning(f"Could not parse {env_var}={value} as integer. Using default {default_value}")
-            return default_value
-            
-    @staticmethod
-    def _safe_parse_float(env_var, default_value):
-        """Safely parse a float from environment variable, stripping any comments."""
-        value = os.getenv(env_var)
-        if value is None:
-            return default_value
-        
-        # Strip any comments or extra spaces
-        try:
-            # Extract just the first part before any #
-            clean_value = value.split('#')[0].strip()
-            return float(clean_value)
-        except (ValueError, AttributeError):
-            logging.warning(f"Could not parse {env_var}={value} as float. Using default {default_value}")
-            return default_value
-            
-    @staticmethod
-    def _safe_parse_bool(env_var, default_value):
-        """Safely parse a boolean from environment variable."""
-        value = os.getenv(env_var)
-        if value is None:
-            return default_value
-            
-        # Get the lowercase clean value
-        clean_value = value.split('#')[0].strip().lower()
-        
-        # Check for truthy values
-        if clean_value in ('true', 'yes', '1', 'y', 'on'):
-            return True
-        # Check for falsy values
-        elif clean_value in ('false', 'no', '0', 'n', 'off'):
-            return False
-        # Default
-        else:
-            logging.warning(f"Could not parse {env_var}={value} as boolean. Using default {default_value}")
-            return default_value
     
     REDIS_PORT = _safe_parse_int("REDIS_PORT", 6379)
     REDIS_DB = _safe_parse_int("REDIS_DB", 0)

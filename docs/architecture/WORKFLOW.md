@@ -1,492 +1,246 @@
-# LangGraph Workflow Architecture
+# NeuralFlow Workflow Architecture
 
-This document outlines the core workflow architecture of the LangGraph application. It serves as a technical reference for developers working with the codebase.
+This document outlines the core workflow architecture of NeuralFlow. It serves as a technical reference for developers working with the codebase.
 
 ## Core Workflow Components
 
-The LangGraph application implements a dynamic workflow with the following key components:
+The NeuralFlow application implements a dynamic workflow with the following key components:
 
-### 1. User Input Processing
+### 1. Workflow Manager
 
-- Entry point for all user queries
-- Initializes structured context containers for the workflow
-- Sets up state tracking for context sufficiency
-
-```python
-# Key component: graph/graph_workflow.py - user_input_node
-state["retrieved_context"] = {
-    "short_term_memory": [],
-    "mid_term_memory": [],
-    "long_term_memory": [],
-    "vector_results": [],
-    "graph_results": [],
-    "document_results": [],
-    "web_search_results": [],
-    "context_sufficient": False
-}
-```
-
-### 2. Context Manager
-
-The Context Manager is responsible for gathering all relevant information and determining if it's sufficient to generate a high-quality response.
-
-#### Context Retrieval Process:
-
-1. **Memory Retrieval**
-   - Gets short-term memory for recent conversation context
-   - Gets mid-term memory for session-level context
-   - Gets long-term memory with query relevance for historical context
-   
-2. **Vector Search**
-   - Performs semantic search against the vector database
-   - Returns content semantically similar to the user query
-   
-3. **Graph Search**
-   - Searches the knowledge graph for related concepts
-   - Extracts relationships and connected information
-   
-4. **Document RAG**
-   - Determines document relevance to the query
-   - Retrieves and processes relevant documents
-   
-5. **Context Sufficiency Evaluation**
-   - Evaluates if current context is enough for a good response
-   - Routes to Task Execution if more context is needed
-   - Routes directly to Response Generation if context is sufficient
-   
-```python
-# Key logic for routing decision in context_retrieval_node
-context_sufficient = (
-    len(state["retrieved_context"]["vector_results"]) > 0 or
-    len(state["retrieved_context"]["graph_results"]) > 0 or
-    len(state["retrieved_context"]["document_results"]) > 0 or
-    len(state["retrieved_context"]["short_term_memory"]) > 0
-)
-
-if context_sufficient:
-    return "response_generation"  # Direct to response if we have enough context
-else:
-    return "task_execution"  # Get more context if needed
-```
-
-### 3. Task Execution (Conditional)
-
-Task Execution is triggered when the Context Manager determines that additional information is needed.
-
-#### Key Operations:
-
-- **Web Search**: Performs web searches for additional information
-- **Function Calling**: Executes functions based on query requirements
-- **Document Creation**: Creates research summaries from gathered information
-- **Content Processing**: Structures additional information for context
+The `WorkflowManager` class is the central component that orchestrates the entire workflow process. It manages:
+- Workflow configuration
+- State management
+- LangChain integration
+- Tool management
+- Memory management
 
 ```python
-# Web search triggered when more context is needed
-if state.get("needs_more_context", False):
-    # Try to use web search tool if available
-    if hasattr(executor, 'function_caller') and hasattr(executor.function_caller, 'web_search'):
-        web_search = executor.function_caller.web_search
-        search_results = web_search.search(state["user_query"])
+class WorkflowManager:
+    def __init__(self, config: Optional[WorkflowConfig] = None):
+        self.config = config or WorkflowConfig()
+        self.state_manager = StateManager()
         
-        # Store results in context
-        state["retrieved_context"]["web_search_results"] = search_results
+        # Initialize LangChain components
+        if self.config.langchain_config:
+            self.langchain_manager = LangChainManager(self.config.langchain_config)
+            self.tools = LangChainTools(
+                self.langchain_manager.vector_store,
+                self.langchain_manager.llm
+            )
+            
+            # Initialize LLM and memory
+            self.llm = ChatOpenAI(
+                model_name=self.config.model_name,
+                temperature=0.7
+            )
+            self.memory = ConversationBufferMemory(
+                return_messages=True,
+                memory_key="chat_history"
+            )
 ```
 
-### 4. Response Generation
+### 2. Workflow Configuration
 
-Response Generation uses all available context, along with style and emotion understanding, to create tailored responses.
+The workflow configuration is managed through the `WorkflowConfig` class:
 
-#### Response Process:
-
-1. **Style & Emotion Analysis**
-   - Analyzes the style of the user's query
-   - Detects the emotional content of the message
-   
-2. **Context Integration**
-   - Combines all context sources into a unified format
-   - Prioritizes context based on relevance and freshness
-   
-3. **LLM Prompt Creation**
-   - Creates a prompt with all context and style information
-   - Formats the prompt for optimal LLM response
-   
-4. **Response Generation**
-   - Generates the final natural language response
-   - Ensures response quality and relevance
-   
-5. **Memory Integration**
-   - Passes the interaction to Memory Manager for storage
-   
 ```python
-# Context integration for high-quality responses
-all_context = {
-    "user_query": state["user_query"],
-    "short_term_memory": state["retrieved_context"].get("short_term_memory", []),
-    "mid_term_memory": state["retrieved_context"].get("mid_term_memory", []),
-    "long_term_memory": state["retrieved_context"].get("long_term_memory", []),
-    "vector_results": state["retrieved_context"].get("vector_results", []),
-    "graph_results": state["retrieved_context"].get("graph_results", []),
-    "document_results": state["retrieved_context"].get("document_results", []),
-    "web_search_results": state["retrieved_context"].get("web_search_results", []),
-    "style": style_label,
-    "emotion": emotion_label
-}
-
-# Generate response with all context
-state["final_response"] = await response_generator.generate(
-    state["execution_result"], 
-    all_context
-)
+@dataclass
+class WorkflowConfig:
+    max_context_items: int = 5
+    max_parallel_tasks: int = 3
+    response_format: str = "text"
+    include_sources: bool = True
+    include_metadata: bool = False
+    execution_mode: str = "safe"
+    priority: int = 0
+    add_thinking: bool = False
+    langchain_config: Optional[LangChainConfig] = None
+    model_name: str = "gpt-4"
 ```
 
-### 5. Memory Management
+### 3. Workflow State
 
-Memory Manager handles the storage and retrieval of conversation history across different time horizons.
-
-#### Memory Operations:
-
-- **Memory Split**: Categorizes information into appropriate memory stores
-- **Context Storage**: Updates vector database with new information
-- **Session Management**: Maintains user session information
-- **Memory Pruning**: Handles automatic cleanup of old memories
+The workflow state is managed using a Pydantic model that tracks:
+- User queries
+- Retrieved context
+- Execution results
+- Memory
+- Thinking process
+- Conversation state
 
 ```python
-# Memory storage in Response Generation
-if hasattr(response_generator, 'model_manager') and hasattr(response_generator.model_manager, 'memory_manager'):
-    memory_manager = response_generator.model_manager.memory_manager
+class WorkflowState(BaseModel):
+    user_query: str = ""
+    retrieved_context: Dict[str, Any] = Field(default_factory=dict)
+    execution_result: Dict[str, Any] = Field(default_factory=dict)
+    final_response: Optional[str] = None
+    error: Optional[str] = None
+    priority: int = 0
+    memory: List[Dict[str, Any]] = Field(default_factory=list)
+    thinking: List[str] = Field(default_factory=list)
+    conversation_id: Optional[str] = None
+    context_processed: bool = False
+    needs_more_context: bool = False
+```
+
+### 4. Workflow Graph
+
+The workflow is implemented as a directed graph with the following nodes:
+
+1. **User Input Node**
+   - Processes user queries
+   - Initializes workflow state
+   - Adds input to conversation memory
+
+2. **Context Retrieval Node**
+   - Uses LangChain tools to retrieve relevant context
+   - Processes and structures context
+   - Updates state with retrieved information
+
+3. **Task Execution Node**
+   - Uses LangChain agent to execute tasks
+   - Handles function calling
+   - Processes task results
+
+4. **Response Generation Node**
+   - Generates final responses
+   - Integrates context and task results
+   - Updates conversation memory
+
+```python
+def _create_workflow_graph(self) -> StateGraph:
+    workflow = StateGraph(WorkflowState)
     
-    # Save interaction to memory
-    await memory_manager.save_interaction(
-        interaction_type="conversation",
-        user_query=state["user_query"],
-        response=state["final_response"],
-        document_path=None,
-        search_results=str(all_context.get("vector_results", []))
+    # Add nodes
+    workflow.add_node("user_input", self._user_input_node)
+    workflow.add_node("context_retrieval", self._context_retrieval_node)
+    workflow.add_node("task_execution", self._task_execution_node)
+    workflow.add_node("response_generation", self._response_generation_node)
+    
+    # Add edges
+    workflow.add_edge("user_input", "context_retrieval")
+    workflow.add_edge("context_retrieval", "task_execution")
+    workflow.add_edge("task_execution", "response_generation")
+    workflow.add_edge("response_generation", END)
+    
+    return workflow
+```
+
+### 5. LangChain Integration
+
+The workflow integrates with LangChain for:
+- LLM interactions
+- Tool management
+- Memory management
+- Agent execution
+
+```python
+def _create_workflow_chain(self):
+    # Create context retrieval chain
+    context_prompt = ChatPromptTemplate.from_messages([
+        SystemMessage(content="You are a helpful assistant that retrieves relevant context for queries."),
+        MessagesPlaceholder(variable_name="chat_history"),
+        HumanMessage(content="{query}")
+    ])
+    
+    context_chain = context_prompt | self.llm | StrOutputParser()
+    
+    # Create task execution chain
+    task_prompt = ChatPromptTemplate.from_messages([
+        SystemMessage(content="You are a helpful assistant that executes tasks based on queries and context."),
+        MessagesPlaceholder(variable_name="chat_history"),
+        HumanMessage(content="Query: {query}\nContext: {context}")
+    ])
+    
+    task_chain = task_prompt | self.llm | StrOutputParser()
+    
+    # Create response generation chain
+    response_prompt = ChatPromptTemplate.from_messages([
+        SystemMessage(content="You are a helpful assistant that generates final responses."),
+        MessagesPlaceholder(variable_name="chat_history"),
+        HumanMessage(content="Query: {query}\nContext: {context}\nTask Result: {task_result}")
+    ])
+    
+    response_chain = response_prompt | self.llm | StrOutputParser()
+    
+    # Combine chains using LCEL
+    return (
+        RunnablePassthrough.assign(
+            context=context_chain,
+            task_result=task_chain
+        )
+        | response_chain
     )
 ```
 
-## Graph Structure
+## Execution Flow
 
-The LangGraph workflow is implemented as a directed graph with nodes representing each major component and edges defining the possible transitions.
+The workflow execution follows these steps:
 
-```
-START → user_input → context_retrieval → task_execution → response_generation → END
-                            ↓
-                    response_generation
-```
+1. **Initialization**
+   - Create WorkflowManager with configuration
+   - Initialize LangChain components
+   - Set up workflow graph
 
-The most important detail of this architecture is the dynamic routing from context_retrieval. Based on context sufficiency, it can either:
-1. Route to task_execution if additional context is needed
-2. Route directly to response_generation if sufficient context is available
+2. **User Input Processing**
+   - Receive user query
+   - Initialize state
+   - Update conversation memory
 
-This dynamic routing optimizes performance by avoiding unnecessary processing steps when they aren't needed.
+3. **Context Retrieval**
+   - Search for relevant context
+   - Process and structure context
+   - Update state with context
 
-## Implementation Details
+4. **Task Execution**
+   - Execute tasks using LangChain agent
+   - Process task results
+   - Update state with results
 
-The workflow is implemented in `graph/graph_workflow.py` with these key functions:
+5. **Response Generation**
+   - Generate final response
+   - Update conversation memory
+   - Return response to user
 
-- `user_input_node`: Initializes the workflow
-- `context_retrieval_node`: Gathers and evaluates context
-- `task_execution_node`: Acquires additional context when needed
-- `response_generation_node`: Generates the final response
-- `create_workflow_graph`: Builds the complete workflow graph
+## State Management
 
-Each node makes routing decisions based on the current state, allowing for a flexible and adaptive conversation experience.
+The workflow maintains state throughout execution:
+- Conversation history
+- Retrieved context
+- Task results
+- Error states
+- Processing flags
 
-# Graph Workflow System Documentation
+## Error Handling
 
-This document provides detailed information about the LangGraph workflow system, including its components, execution flow, and management capabilities.
+The workflow includes comprehensive error handling:
+- Node-level error catching
+- State validation
+- Graceful degradation
+- Error reporting
 
-## Overview
+## Memory Management
 
-The LangGraph workflow system is a powerful graph-based orchestration engine that manages the execution of complex AI workflows. It provides a flexible and extensible framework for building, executing, and monitoring AI-powered applications.
+Memory is managed through:
+- Conversation buffer memory
+- Context storage
+- State persistence
+- Checkpoint management
 
-## Core Components
+## Configuration
 
-### 1. Workflow Definition
-```json
-{
-  "id": "string",
-  "name": "string",
-  "description": "string",
-  "version": "string",
-  "nodes": [
-    {
-      "id": "string",
-      "type": "string",
-      "config": {},
-      "metadata": {}
-    }
-  ],
-  "edges": [
-    {
-      "from": "string",
-      "to": "string",
-      "condition": "string",
-      "metadata": {}
-    }
-  ],
-  "variables": {},
-  "settings": {}
-}
-```
+The workflow is configurable through:
+- WorkflowConfig for general settings
+- LangChainConfig for LLM settings
+- Tool configuration
+- Memory settings
 
-### 2. Node Types
-- **Input Nodes**: Handle input processing and validation
-- **Processing Nodes**: Perform specific tasks (LLM, memory, context)
-- **Conditional Nodes**: Implement branching logic
-- **Output Nodes**: Format and deliver results
-- **Custom Nodes**: User-defined processing units
+## Future Improvements
 
-### 3. Edge Types
-- **Direct Edges**: Simple node-to-node connections
-- **Conditional Edges**: Branch based on conditions
-- **Parallel Edges**: Enable concurrent execution
-- **Error Edges**: Handle error cases
-- **Loop Edges**: Enable workflow iteration
-
-## Workflow Execution
-
-### 1. Execution Flow
-1. Workflow Initialization
-2. Input Processing
-3. Node Execution
-4. Edge Traversal
-5. Output Generation
-6. Cleanup
-
-### 2. Execution States
-- **Pending**: Workflow is created but not started
-- **Running**: Workflow is actively executing
-- **Paused**: Workflow execution is temporarily stopped
-- **Completed**: Workflow has finished successfully
-- **Failed**: Workflow execution encountered an error
-- **Cancelled**: Workflow was manually stopped
-
-### 3. Error Handling
-- **Node Errors**: Individual node failure handling
-- **Edge Errors**: Connection failure handling
-- **Workflow Errors**: Overall workflow failure handling
-- **Recovery Mechanisms**: Error recovery and retry logic
-
-## Workflow Management
-
-### 1. Version Control
-- **Versioning**: Track workflow versions
-- **Migration**: Handle version updates
-- **Compatibility**: Ensure version compatibility
-- **Rollback**: Version rollback capabilities
-
-### 2. Monitoring
-- **Execution Metrics**: Track execution performance
-- **Resource Usage**: Monitor resource consumption
-- **Error Tracking**: Track and analyze errors
-- **Usage Statistics**: Collect usage data
-
-### 3. Optimization
-- **Performance Tuning**: Optimize execution speed
-- **Resource Management**: Efficient resource usage
-- **Caching**: Implement caching strategies
-- **Parallelization**: Enable parallel execution
-
-## Node Configuration
-
-### 1. Common Node Settings
-```json
-{
-  "id": "string",
-  "type": "string",
-  "config": {
-    "timeout": "number",
-    "retry_count": "number",
-    "retry_delay": "number",
-    "max_attempts": "number"
-  },
-  "metadata": {
-    "description": "string",
-    "tags": ["string"],
-    "version": "string"
-  }
-}
-```
-
-### 2. Node-Specific Settings
-- **LLM Nodes**: Model configuration, temperature, tokens
-- **Memory Nodes**: Memory type, capacity, retention
-- **Context Nodes**: Context processing rules
-- **Output Nodes**: Formatting and delivery options
-
-## Edge Configuration
-
-### 1. Edge Settings
-```json
-{
-  "from": "string",
-  "to": "string",
-  "condition": {
-    "type": "string",
-    "expression": "string",
-    "parameters": {}
-  },
-  "metadata": {
-    "description": "string",
-    "priority": "number"
-  }
-}
-```
-
-### 2. Condition Types
-- **Boolean**: Simple true/false conditions
-- **Expression**: Complex logical expressions
-- **Threshold**: Numeric threshold conditions
-- **Custom**: User-defined conditions
-
-## Workflow Variables
-
-### 1. Variable Types
-- **Input Variables**: Workflow input parameters
-- **Output Variables**: Workflow output values
-- **Internal Variables**: Temporary processing values
-- **Global Variables**: Shared across workflows
-
-### 2. Variable Management
-- **Declaration**: Define variable types and constraints
-- **Assignment**: Set variable values
-- **Validation**: Validate variable values
-- **Scope**: Manage variable scope
-
-## Best Practices
-
-### 1. Workflow Design
-- Keep workflows modular and reusable
-- Implement proper error handling
-- Use meaningful node and edge names
-- Document workflow purpose and usage
-
-### 2. Performance
-- Optimize node execution
-- Implement caching where appropriate
-- Monitor resource usage
-- Use parallel execution when possible
-
-### 3. Security
-- Validate all inputs
-- Implement proper access controls
-- Secure sensitive data
-- Monitor for security issues
-
-### 4. Maintenance
-- Regular workflow updates
-- Performance monitoring
-- Error tracking and resolution
-- Documentation updates
-
-## SDK Examples
-
-### Python
-```python
-from langgraph.api import WorkflowAPI
-
-api = WorkflowAPI(api_key="your-api-key")
-
-# Create workflow
-workflow = api.create_workflow({
-    "name": "Example Workflow",
-    "description": "A sample workflow",
-    "nodes": [
-        {
-            "id": "input",
-            "type": "input",
-            "config": {
-                "prompt": "Enter your question:"
-            }
-        },
-        {
-            "id": "process",
-            "type": "llm",
-            "config": {
-                "model": "gpt-4",
-                "temperature": 0.7
-            }
-        },
-        {
-            "id": "output",
-            "type": "output",
-            "config": {
-                "format": "text"
-            }
-        }
-    ],
-    "edges": [
-        {
-            "from": "input",
-            "to": "process"
-        },
-        {
-            "from": "process",
-            "to": "output"
-        }
-    ]
-})
-
-# Execute workflow
-result = api.execute_workflow(workflow.id, {
-    "input": {
-        "question": "What is the capital of France?"
-    }
-})
-```
-
-### JavaScript
-```javascript
-const { WorkflowAPI } = require('langgraph');
-
-const api = new WorkflowAPI('your-api-key');
-
-// Create workflow
-const workflow = await api.createWorkflow({
-    name: 'Example Workflow',
-    description: 'A sample workflow',
-    nodes: [
-        {
-            id: 'input',
-            type: 'input',
-            config: {
-                prompt: 'Enter your question:'
-            }
-        },
-        {
-            id: 'process',
-            type: 'llm',
-            config: {
-                model: 'gpt-4',
-                temperature: 0.7
-            }
-        },
-        {
-            id: 'output',
-            type: 'output',
-            config: {
-                format: 'text'
-            }
-        }
-    ],
-    edges: [
-        {
-            from: 'input',
-            to: 'process'
-        },
-        {
-            from: 'process',
-            to: 'output'
-        }
-    ]
-});
-
-// Execute workflow
-const result = await api.executeWorkflow(workflow.id, {
-    input: {
-        question: 'What is the capital of France?'
-    }
-});
-```
+Planned enhancements include:
+- Enhanced error recovery
+- Advanced state management
+- Improved context retrieval
+- Extended tool support
+- Better monitoring and logging

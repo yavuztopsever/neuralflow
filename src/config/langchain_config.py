@@ -5,8 +5,8 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from langchain_community.llms import HuggingFaceHub, Cohere
-from langchain.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddings
-from langchain.vectorstores import Chroma, FAISS, Pinecone, Weaviate
+from langchain_community.embeddings import OpenAIEmbeddings, HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma, FAISS, Pinecone, Weaviate
 from langchain.memory import (
     ConversationBufferMemory,
     ConversationSummaryMemory,
@@ -25,18 +25,14 @@ from langchain.prompts import (
     FewShotPromptTemplate,
     ChatPromptTemplate
 )
-from langchain.agents import (
-    AgentExecutor,
-    ZeroShotAgent,
-    ChatZeroShotAgent
-)
+from langchain.agents import AgentExecutor
+from langchain.agents.format_scratchpad import format_log_to_str
+from langchain.agents.output_parsers import ReActSingleInputOutputParser
 from langchain.tools import Tool
-from langchain.document_loaders import (
-    TextLoader,
-    PDFLoader,
-    CSVLoader,
-    WebBaseLoader
-)
+from langchain_community.document_loaders.text import TextLoader
+from langchain_community.document_loaders.pdf import PyPDFLoader
+from langchain_community.document_loaders.csv_loader import CSVLoader
+from langchain_community.document_loaders import WebBaseLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 class LLMConfig(BaseModel):
@@ -210,7 +206,7 @@ class LangChainManager:
         if self.config.document_loader.type == "text":
             return TextLoader(self.config.document_loader.file_path)
         elif self.config.document_loader.type == "pdf":
-            return PDFLoader(self.config.document_loader.file_path)
+            return PyPDFLoader(self.config.document_loader.file_path)
         elif self.config.document_loader.type == "csv":
             return CSVLoader(self.config.document_loader.file_path)
         elif self.config.document_loader.type == "web":
@@ -261,31 +257,25 @@ class LangChainManager:
         )
     
     def create_agent(self, tools: list[Tool], agent_type: str = "zero_shot") -> AgentExecutor:
-        """Create an AgentExecutor with the given tools."""
-        if agent_type == "zero_shot":
-            prompt = ZeroShotAgent.create_prompt(
-                tools,
-                prefix="You are a helpful assistant.",
-                suffix="Begin!",
-                input_variables=["input", "agent_scratchpad"]
-            )
-            agent = ZeroShotAgent(
-                llm_chain=LLMChain(llm=self.llm, prompt=prompt),
-                allowed_tools=[tool.name for tool in tools]
-            )
-        else:
-            prompt = ChatPromptTemplate.from_messages([
-                ("system", "You are a helpful assistant."),
-                ("human", "{input}"),
-                ("ai", "Let me help you with that.")
-            ])
-            agent = ChatZeroShotAgent(
-                llm_chain=LLMChain(llm=self.llm, prompt=prompt),
-                allowed_tools=[tool.name for tool in tools]
-            )
+        """Create an agent with the given tools."""
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are a helpful AI assistant. Use the following tools to help answer the user's question:\n\n{tools}\n\nUse the following format:\nQuestion: the input question you must answer\nThought: you should always think about what to do\nAction: the action to take, should be one of [{tool_names}]\nAction Input: the input to the action\nObservation: the result of the action\n... (this Thought/Action/Action Input/Observation can repeat N times)\nThought: I now know the final answer\nFinal Answer: the final answer to the original input question"),
+            ("human", "{input}"),
+            ("assistant", "Let me approach this step by step:"),
+            ("human", "{agent_scratchpad}")
+        ])
         
-        return AgentExecutor.from_agent_and_tools(
-            agent=agent,
-            tools=tools,
-            memory=self.memory
-        ) 
+        llm_with_stop = self.llm.bind(stop=["\nObservation:"])
+        agent = (
+            {
+                "input": lambda x: x["input"],
+                "agent_scratchpad": lambda x: format_log_to_str(x["intermediate_steps"]),
+                "tools": lambda x: "\n".join([f"{tool.name}: {tool.description}" for tool in tools]),
+                "tool_names": lambda x: ", ".join([tool.name for tool in tools])
+            }
+            | prompt
+            | llm_with_stop
+            | ReActSingleInputOutputParser()
+        )
+        
+        return AgentExecutor(agent=agent, tools=tools, verbose=True) 

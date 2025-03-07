@@ -13,9 +13,9 @@ from langchain.schema import Document, BaseMessage
 from langchain.vectorstores import VectorStore
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import (
+from langchain_community.document_loaders import (
     TextLoader,
-    PDFLoader,
+    PyPDFLoader,
     DirectoryLoader,
     UnstructuredMarkdownLoader
 )
@@ -88,7 +88,7 @@ class LangChainUtils:
             # Select appropriate loader based on file type
             if doc_type == "auto":
                 if file_path.suffix.lower() == ".pdf":
-                    loader = PDFLoader(str(file_path))
+                    loader = PyPDFLoader(str(file_path))
                 elif file_path.suffix.lower() == ".md":
                     loader = UnstructuredMarkdownLoader(str(file_path))
                 elif file_path.is_dir():
@@ -97,7 +97,7 @@ class LangChainUtils:
                     loader = TextLoader(str(file_path))
             else:
                 loader_class = {
-                    "pdf": PDFLoader,
+                    "pdf": PyPDFLoader,
                     "markdown": UnstructuredMarkdownLoader,
                     "directory": DirectoryLoader,
                     "text": TextLoader

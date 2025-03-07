@@ -1,225 +1,274 @@
 # NeuralFlow Development Guide
 
-This section provides comprehensive documentation for developers working on the NeuralFlow project, including setup, guidelines, and best practices.
-
-## Table of Contents
-
-### Getting Started
-- [Development Setup](setup.md) - Setting up the development environment
-- [Code Style Guide](style.md) - Coding standards and style guidelines
-- [Git Workflow](git.md) - Git workflow and branching strategy
-- [Project Structure](structure.md) - Project organization and structure
-
-### Development Guidelines
-- [Architecture Guidelines](architecture.md) - Architectural principles and patterns
-- [Testing Guidelines](testing.md) - Testing standards and procedures
-- [Documentation Guidelines](documentation.md) - Documentation standards
-- [Security Guidelines](security.md) - Security best practices
-
-### Tools and Workflows
-- [Development Tools](tools.md) - Recommended development tools
-- [Debugging Guide](debugging.md) - Debugging procedures
-- [Performance Profiling](profiling.md) - Performance optimization
-- [Code Review](review.md) - Code review process
-
-### Release Process
-- [Release Management](release.md) - Release process and procedures
-- [Version Control](versioning.md) - Version control guidelines
-- [Deployment](deployment.md) - Deployment procedures
-- [CI/CD Pipeline](ci_cd.md) - Continuous integration and deployment
-
-## Development Setup
+## Getting Started
 
 ### Prerequisites
-- Python 3.8 or higher
+- Python 3.8+
 - Git
 - Docker (optional)
-- Redis (optional)
+- Virtual environment (recommended)
 
-### Environment Setup
+### Development Environment Setup
+
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/yavuztopsever/neuralflow.git
-   cd neuralflow
-   ```
+```bash
+git clone https://github.com/yavuztopsever/neuralflow.git
+cd neuralflow
+```
 
-2. Create a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+2. Create and activate virtual environment:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
 
 3. Install development dependencies:
-   ```bash
-   pip install -r requirements/dev.txt
-   ```
+```bash
+pip install -r requirements-dev.txt
+```
 
 4. Set up pre-commit hooks:
-   ```bash
-   pre-commit install
-   ```
+```bash
+pre-commit install
+```
 
-5. Configure environment variables:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your settings
-   ```
+## Project Structure
 
-## Code Style Guide
-
-### Python Style
-- Follow PEP 8 guidelines
-- Use type hints
-- Write docstrings for all public functions
-- Keep functions focused and small
-
-### Documentation Style
-- Use clear and concise language
-- Include code examples
-- Keep documentation up to date
-- Use proper markdown formatting
-
-### Git Style
-- Write clear commit messages
-- Keep commits focused
-- Follow branching strategy
-- Review code before committing
-
-## Testing Guidelines
-
-### Unit Testing
-- Write tests for all new code
-- Maintain test coverage
-- Use appropriate test fixtures
-- Follow testing best practices
-
-### Integration Testing
-- Test component interactions
-- Use test databases
-- Mock external services
-- Test error conditions
-
-### Performance Testing
-- Profile code performance
-- Test under load
-- Monitor resource usage
-- Optimize bottlenecks
+```
+neuralflow/
+├── src/                    # Source code
+│   ├── api/               # API endpoints
+│   ├── config/            # Configuration management
+│   ├── core/              # Core functionality
+│   │   ├── workflow/      # Workflow engine
+│   │   ├── state/         # State management
+│   │   ├── graph/         # Graph processing
+│   │   ├── context/       # Context management
+│   │   ├── events/        # Event system
+│   │   ├── tools/         # Tool management
+│   │   └── services/      # Service layer
+│   ├── data/              # Data processing
+│   ├── graph_store/       # Graph storage
+│   ├── infrastructure/    # Infrastructure components
+│   ├── logs/              # Logging system
+│   ├── memory/            # Memory management
+│   ├── models/            # Data models
+│   ├── neuralflow/        # Main package
+│   ├── services/          # Business services
+│   ├── storage/           # Storage system
+│   ├── ui/                # User interface
+│   ├── utils/             # Utility functions
+│   └── vector_store/      # Vector storage
+├── tests/                 # Test files
+├── docs/                  # Documentation
+├── examples/              # Example code
+└── scripts/               # Utility scripts
+```
 
 ## Development Workflow
 
-### Feature Development
-1. Create feature branch
-2. Implement changes
-3. Write tests
-4. Update documentation
-5. Submit pull request
-6. Address review comments
-7. Merge changes
+### 1. Branch Management
 
-### Bug Fixing
-1. Create bug fix branch
-2. Reproduce issue
-3. Implement fix
-4. Write regression tests
-5. Submit pull request
-6. Address review comments
-7. Merge changes
+- `main`: Production-ready code
+- `develop`: Development branch
+- Feature branches: `feature/feature-name`
+- Bug fix branches: `fix/bug-name`
+- Release branches: `release/version`
 
-### Code Review Process
-1. Self-review changes
-2. Run tests locally
-3. Submit pull request
-4. Address review comments
-5. Update documentation
-6. Merge changes
+### 2. Code Style
 
-## Tools and Utilities
+We follow PEP 8 guidelines with some modifications:
 
-### Development Tools
-- IDE: VS Code or PyCharm
-- Git: Latest version
-- Docker: For containerization
-- Redis: For caching
+```python
+# Good
+def process_data(data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Process input data and return processed results.
+    
+    Args:
+        data: Input data dictionary
+        
+    Returns:
+        List of processed data dictionaries
+    """
+    results = []
+    for item in data:
+        processed = transform(item)
+        results.append(processed)
+    return results
 
-### Testing Tools
-- pytest: Unit testing
-- coverage: Code coverage
-- locust: Load testing
-- memory_profiler: Memory profiling
+# Bad
+def process_data(data):
+    results=[]
+    for item in data:processed=transform(item);results.append(processed)
+    return results
+```
 
-### Documentation Tools
-- Sphinx: API documentation
-- MkDocs: User documentation
-- PlantUML: Diagrams
-- Draw.io: Architecture diagrams
+### 3. Testing
 
-## Release Process
+#### Running Tests
+```bash
+# Run all tests
+pytest
 
-### Version Management
-- Semantic versioning
-- Changelog maintenance
-- Release notes
-- Version tagging
+# Run specific test file
+pytest tests/test_workflow.py
 
-### Deployment Process
-1. Version bump
-2. Changelog update
-3. Release notes
-4. Tag release
-5. Build packages
-6. Deploy to staging
-7. Deploy to production
+# Run with coverage
+pytest --cov=src tests/
+```
 
-### CI/CD Pipeline
-- Automated testing
-- Code quality checks
-- Documentation builds
-- Package building
-- Deployment automation
+#### Writing Tests
 
-## Contributing Guidelines
+```python
+import pytest
+from neuralflow.core.workflow import WorkflowManager
 
-### Pull Request Process
-1. Fork repository
-2. Create feature branch
-3. Implement changes
-4. Write tests
-5. Update documentation
-6. Submit pull request
-7. Address review comments
-8. Merge changes
+def test_workflow_creation():
+    config = WorkflowConfig()
+    manager = WorkflowManager(config)
+    assert manager.config == config
+    assert manager.state_manager is not None
 
-### Code Review Guidelines
-- Review for functionality
-- Check code style
-- Verify tests
-- Review documentation
-- Check performance
-- Security review
+@pytest.mark.asyncio
+async def test_workflow_execution():
+    config = WorkflowConfig()
+    manager = WorkflowManager(config)
+    result = await manager.process_user_input("test query")
+    assert result.final_response is not None
+```
 
-### Documentation Updates
-- Update relevant docs
-- Add examples
-- Update API docs
-- Update changelog
-- Review changes
+### 4. Documentation
 
-## Support and Resources
+#### Code Documentation
+- Use docstrings for all public functions and classes
+- Follow Google style docstrings
+- Include type hints
 
-### Internal Resources
-- Development wiki
-- API documentation
-- Architecture diagrams
-- Test documentation
+```python
+def process_workflow(
+    workflow_id: str,
+    input_data: Dict[str, Any],
+    options: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """Process a workflow with given input data.
+    
+    Args:
+        workflow_id: Unique identifier for the workflow
+        input_data: Input data for workflow processing
+        options: Optional configuration parameters
+        
+    Returns:
+        Processed workflow results
+        
+    Raises:
+        WorkflowNotFoundError: If workflow doesn't exist
+        ValidationError: If input data is invalid
+    """
+    pass
+```
 
-### External Resources
-- Python documentation
-- Git documentation
-- Docker documentation
-- Testing documentation
+#### API Documentation
+- Update API documentation for new endpoints
+- Include request/response examples
+- Document error cases
 
-### Getting Help
-- Check documentation
-- Ask team members
-- Review existing issues
-- Create new issue 
+### 5. Code Review Process
+
+1. Create pull request
+2. Ensure CI checks pass
+3. Address review comments
+4. Merge after approval
+
+### 6. Performance Guidelines
+
+1. **Memory Management**
+   - Use LangChain's memory system effectively
+   - Implement proper cleanup
+   - Monitor memory usage
+
+2. **API Design**
+   - Implement pagination
+   - Use caching where appropriate
+   - Optimize response size
+
+3. **Resource Management**
+   - Implement proper cleanup
+   - Monitor memory usage
+   - Handle connection pooling
+
+## Debugging
+
+### 1. Logging
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+def process_data(data):
+    logger.debug("Processing data: %s", data)
+    try:
+        result = transform(data)
+        logger.info("Data processed successfully")
+        return result
+    except Exception as e:
+        logger.error("Error processing data: %s", str(e))
+        raise
+```
+
+### 2. Debug Tools
+
+- Use `pdb` for debugging
+- Implement proper error handling
+- Use logging effectively
+
+## Deployment
+
+### 1. Local Development
+
+```bash
+# Start development server
+python src/main.py --dev
+
+# Run with Docker
+docker-compose up
+```
+
+### 2. Production Deployment
+
+1. Build Docker image:
+```bash
+docker build -t neuralflow .
+```
+
+2. Deploy to production:
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## Contributing
+
+### 1. Fork and Clone
+
+1. Fork the repository
+2. Clone your fork
+3. Create feature branch
+4. Make changes
+5. Push to your fork
+6. Create pull request
+
+### 2. Code Review Checklist
+
+- [ ] Code follows style guidelines
+- [ ] Tests are included and pass
+- [ ] Documentation is updated
+- [ ] No sensitive data is exposed
+- [ ] Error handling is implemented
+- [ ] Performance is considered
+
+## Support
+
+For development-related questions:
+- Email: development@neuralflow.com
+- Documentation: https://docs.neuralflow.com/development
+- GitHub Issues: https://github.com/yavuztopsever/neuralflow/issues 
