@@ -38,24 +38,29 @@ Munich, Germany
 
 ```
 neuralflow/
-├── src/
-│   ├── api/           # API endpoints and routes
-│   ├── core/          # Core functionality and services
-│   ├── data/          # Data processing and management
-│   ├── graph_store/   # Graph storage and operations
-│   ├── memory/        # Memory management systems
-│   ├── models/        # Data models and schemas
-│   ├── services/      # Business logic and workflow services
-│   ├── storage/       # Storage implementations
-│   ├── ui/           # User interface components
-│   ├── utils/        # Utility functions and helpers
-│   └── vector_store/ # Vector storage implementations
-├── tests/            # Test suite and test utilities
+├── src/              # Source code and application data
+│   ├── api/         # API endpoints and routes
+│   ├── config/      # Configuration files and settings
+│   ├── core/        # Core functionality and services
+│   ├── data/        # Data processing and management
+│   ├── graph_store/ # Graph storage and operations
+│   ├── logs/        # Application logs
+│   ├── memory/      # Memory management systems
+│   ├── models/      # Model code and implementations
+│   ├── services/    # Business logic and workflow services
+│   ├── storage/     # Data storage and persistence
+│   ├── ui/          # User interface components
+│   ├── utils/       # Utility functions and helpers
+│   └── vector_store/# Vector storage implementations
+├── models/          # Model files and data
+├── tests/           # Test suite and test utilities
 ├── docs/            # Comprehensive documentation
-├── config/         # Configuration files and settings
-├── scripts/        # Utility and setup scripts
-├── storage/        # Data storage directory
-└── requirements/   # Dependency management
+├── scripts/         # Utility and setup scripts
+├── .env             # Environment variables
+├── .env.example     # Example environment variables
+├── requirements.txt # Production dependencies
+├── requirements-dev.txt # Development dependencies
+└── setup.py         # Package setup file
 ```
 
 ## Installation

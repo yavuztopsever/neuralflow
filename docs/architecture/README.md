@@ -161,26 +161,32 @@ The UI layer provides:
 
 ### Code Organization
 ```
-src/
-├── api/              # API endpoints
-├── config/           # Configuration management
-├── core/             # Core functionality
-│   ├── workflow/     # Workflow engine
-│   ├── state/        # State management
-│   ├── graph/        # Graph processing
-│   ├── context/      # Context management
-│   ├── events/       # Event system
-│   ├── tools/        # Tool management
-│   └── services/     # Service layer
-├── data/             # Data processing
-├── graph_store/      # Graph storage
-├── memory/           # Memory management
-├── models/           # Data models
-├── services/         # Business services
-├── storage/          # Storage system
-├── ui/               # User interface
-├── utils/            # Utility functions
-└── vector_store/     # Vector storage
+neuralflow/
+├── src/              # Source code and application data
+│   ├── api/         # API endpoints and routes
+│   ├── config/      # Configuration files and settings
+│   ├── core/        # Core functionality
+│   │   ├── workflow/ # Workflow engine
+│   │   ├── state/    # State management
+│   │   ├── graph/    # Graph processing
+│   │   ├── context/  # Context management
+│   │   ├── events/   # Event system
+│   │   ├── tools/    # Tool management
+│   │   └── services/ # Service layer
+│   ├── data/        # Data processing
+│   ├── graph_store/ # Graph storage
+│   ├── logs/        # Application logs
+│   ├── memory/      # Memory management
+│   ├── models/      # Model code and implementations
+│   ├── services/    # Business services
+│   ├── storage/     # Data storage and persistence
+│   ├── ui/          # User interface
+│   ├── utils/       # Utility functions
+│   └── vector_store/# Vector storage
+├── models/          # Model files and data
+├── tests/           # Test suite
+├── docs/            # Documentation
+└── scripts/         # Utility scripts
 ```
 
 ### Testing Strategy

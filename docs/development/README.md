@@ -36,9 +36,9 @@ pre-commit install
 
 ```
 neuralflow/
-├── src/                    # Source code
-│   ├── api/               # API endpoints
-│   ├── config/            # Configuration management
+├── src/                    # Source code and application data
+│   ├── api/               # API endpoints and routes
+│   ├── config/            # Configuration files and settings
 │   ├── core/              # Core functionality
 │   │   ├── workflow/      # Workflow engine
 │   │   ├── state/         # State management
@@ -49,13 +49,15 @@ neuralflow/
 │   │   └── services/      # Service layer
 │   ├── data/              # Data processing
 │   ├── graph_store/       # Graph storage
+│   ├── logs/              # Application logs
 │   ├── memory/            # Memory management
-│   ├── models/            # Data models
+│   ├── models/            # Model code and implementations
 │   ├── services/          # Business services
-│   ├── storage/           # Storage system
+│   ├── storage/           # Data storage and persistence
 │   ├── ui/                # User interface
 │   ├── utils/             # Utility functions
 │   └── vector_store/      # Vector storage
+├── models/                # Model files and data
 ├── tests/                 # Test files
 │   ├── unit/             # Unit tests
 │   ├── integration/      # Integration tests
@@ -64,7 +66,12 @@ neuralflow/
 │   ├── acceptance/      # Acceptance tests
 │   └── fixtures/        # Test fixtures
 ├── docs/                  # Documentation
-└── scripts/               # Utility scripts
+├── scripts/               # Utility scripts
+├── .env                   # Environment variables
+├── .env.example          # Example environment variables
+├── requirements.txt       # Production dependencies
+├── requirements-dev.txt   # Development dependencies
+└── setup.py              # Package setup file
 ```
 
 ## Development Workflow
