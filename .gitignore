@@ -51,3 +51,4 @@ tests/unit/vector_store/test_data/
 # OS
 .DS_Store
 Thumbs.db
+.cursor/
