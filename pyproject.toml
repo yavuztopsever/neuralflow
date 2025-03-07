@@ -25,6 +25,7 @@ dependencies = [
     "scipy>=1.10.0",
     "redis>=4.5.0",
     "aioredis>=2.0.0",
+    "mcp[cli]",
 ]
 
 [project.optional-dependencies]
