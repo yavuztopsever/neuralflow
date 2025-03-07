@@ -57,10 +57,10 @@ class ConfigManager:
                     'log_level': 'INFO'
                 },
                 'storage': {
-                    'documents_dir': 'storage/documents',
-                    'notes_dir': 'storage/notes',
-                    'state_dir': 'storage/state',
-                    'vector_db_dir': 'storage/vector'
+                    'documents_dir': 'src/storage/documents',
+                    'notes_dir': 'src/storage/notes',
+                    'state_dir': 'src/storage/state',
+                    'vector_db_dir': 'src/storage/vector'
                 },
                 'processing': {
                     'chunk_size': 1000,
@@ -79,7 +79,8 @@ class ConfigManager:
                 },
                 'models': {
                     'embedder': 'sentence-transformers/all-MiniLM-L6-v2',
-                    'embedding_dimension': 384
+                    'embedding_dimension': 384,
+                    'model_dir': 'models'
                 }
             }
             self._config_cache['default'] = default_config

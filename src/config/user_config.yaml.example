@@ -1,0 +1,79 @@
+# User-level configuration for LangGraph
+# Copy this file to ~/.langgraph/config.yaml and modify as needed
+
+# User-specific paths
+paths:
+  data_dir: "${DATA_DIR:-./storage/data}"  # Directory for storing data
+  models_dir: "${MODELS_DIR:-./storage/models}"  # Directory for storing models
+  logs_dir: "${LOGS_DIR:-./logs}"  # Directory for storing logs
+
+# API Keys and Credentials
+api_keys:
+  openai: "${OPENAI_API_KEY}"  # Your OpenAI API key
+  anthropic: "${ANTHROPIC_API_KEY}"  # Your Anthropic API key
+  huggingface: "${HUGGINGFACE_API_KEY}"  # Your HuggingFace API key
+
+# Model Preferences
+models:
+  llm:
+    default: "${LLM_MODEL:-deepseek-1.5b}"  # Your preferred LLM
+    temperature: 0.7
+    max_tokens: "${GGUF_MAX_TOKENS:-1024}"
+    top_p: "${GGUF_TOP_P:-0.95}"
+    top_k: "${GGUF_TOP_K:-40}"
+    context_window: "${GGUF_CONTEXT_WINDOW:-4096}"
+    n_threads: "${GGUF_N_THREADS:-6}"
+    n_batch: "${GGUF_N_BATCH:-256}"
+    n_gpu_layers: "${GGUF_N_GPU_LAYERS:-1}"
+  embeddings:
+    default: "text-embedding-ada-002"  # Your preferred embedding model
+
+# Storage Preferences
+storage:
+  vector_store:
+    default: "${VECTOR_STORE_TYPE:-pinecone}"  # Your preferred vector store
+    pinecone:
+      environment: "${PINECONE_ENVIRONMENT}"
+      api_key: "${PINECONE_API_KEY}"
+  cache:
+    default: "${CACHE_TYPE:-redis}"  # Your preferred cache backend
+    redis:
+      host: "${REDIS_HOST:-localhost}"
+      port: "${REDIS_PORT:-6379}"
+      password: "${REDIS_PASSWORD:-}"  # Optional
+
+# Memory Management
+memory:
+  monitor_enabled: "${MEMORY_MONITOR_ENABLED:-true}"
+  high_threshold: "${MEMORY_HIGH_THRESHOLD:-40}"
+  critical_threshold: "${MEMORY_CRITICAL_THRESHOLD:-55}"
+  max_loaded_models: "${MAX_LOADED_MODELS:-1}"
+  model_priority: "${MODEL_PRIORITY:-deepseek-1.5b}"
+
+# Performance Settings
+performance:
+  thread_pool_enabled: "${THREAD_POOL_ENABLED:-true}"
+  max_threads: "${MAX_THREADS:-6}"
+  db_pool_size: "${DB_POOL_SIZE:-2}"
+  db_max_overflow: "${DB_MAX_OVERFLOW:-1}"
+  db_pool_recycle: "${DB_POOL_RECYCLE:-900}"
+
+# Development Settings
+development:
+  debug: false
+  log_level: "INFO"
+  use_local_llm: true
+  minimal_mode: false
+
+# Custom Workflow Settings
+workflow:
+  max_retries: 3
+  timeout: 300
+  parallel_execution: true
+
+# Custom Logging Settings
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "${LOGS_DIR:-./logs}/app.log"
+  console: true 

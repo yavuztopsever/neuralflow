@@ -190,12 +190,17 @@ class Config:
     
     # ========== Model Paths ==========
     MODEL_PATHS = {
-        "content": MODELS_DIR / "content_model" / "pytorch_content_model.pth",
-        "style": MODELS_DIR / "style_model",
-        "emotion": MODELS_DIR / "emotion_model" / "emotion_model.pkl",
-        "relation": MODELS_DIR / "relation_model",
-        "linking": MODELS_DIR / "linking_model",
+        # ... existing paths ...
     }
+
+    GGUF_MODEL_PATHS = {
+        "deepseek-8b": Path("/Volumes/HomeX/yavuztopsever/neuralflow/models/gguf_llm/DeepSeek-R1-Distill-Llama-8B-Q4_K_M.gguf"),
+        "deepseek-1.5b": Path("/Volumes/HomeX/yavuztopsever/neuralflow/models/gguf_llm/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf"),
+        "deepseek-7b": Path("/Volumes/HomeX/yavuztopsever/neuralflow/models/gguf_llm/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf"),
+        "qwen-coder-7b": Path("/Volumes/HomeX/yavuztopsever/neuralflow/models/gguf_llm/qwen2.5-coder-7b-instruct-q4_k_m.gguf"),
+    }
+
+
     
     # Model setup
     TFIDF_VECTORIZER_PATH = MODELS_DIR / "emotion_model" / "tfidf_vectorizer.pkl"
