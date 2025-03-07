@@ -370,3 +370,39 @@ __all__ = [
     'MemoryManager',
     'VectorSearch'
 ]
+
+@pytest.fixture
+def mock_context_handler():
+    """Create a mock context handler."""
+    handler = MagicMock()
+    handler.memory_manager = MagicMock()
+    handler.memory_manager.get_short_term_memory = AsyncMock(return_value=[])
+    handler.memory_manager.get_mid_term_memory = AsyncMock(return_value=[])
+    handler.memory_manager.get_interactions = AsyncMock(return_value=[])
+    return handler
+
+@pytest.fixture
+def mock_task_execution():
+    """Create a mock task execution."""
+    executor = MagicMock()
+    executor.execute = AsyncMock(return_value={"execution_result": "Task executed"})
+    return executor
+
+@pytest.fixture
+def mock_response_generation():
+    """Create a mock response generator."""
+    generator = MagicMock()
+    generator.generate = AsyncMock(return_value="Test response")
+    return generator
+
+@pytest.fixture
+def mock_memory_manager():
+    """Create a mock memory manager."""
+    manager = MagicMock()
+    manager.save_interaction = AsyncMock()
+    return manager
+
+@pytest.fixture
+def sample_user_query():
+    """Create a sample user query."""
+    return "What is LangGraph?"
