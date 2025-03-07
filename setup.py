@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-with open("requirements/base.txt", "r", encoding="utf-8") as fh:
+with open("requirements.txt", "r", encoding="utf-8") as fh:
     requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
 
 setup(
@@ -39,20 +39,7 @@ setup(
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     python_requires=">=3.8",
-    install_requires=[
-        "pydantic>=2.0.0",
-        "typing-extensions>=4.5.0",
-        "python-dotenv>=1.0.0",
-        "PyYAML>=6.0.1",
-        "aiohttp>=3.8.5",
-        "asyncio>=3.4.3",
-        "structlog>=23.1.0",
-        "prometheus-client>=0.17.1",
-        "numpy>=1.24.0",
-        "scipy>=1.10.0",
-        "redis>=4.5.0",
-        "aioredis>=2.0.0",
-    ],
+    install_requires=requirements,
     extras_require={
         "dev": [
             "black>=23.3.0",
