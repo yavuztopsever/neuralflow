@@ -255,101 +255,68 @@ api.add_memory_items(store.id, {
 
 ### 2. Retrieval API
 ```python
-# Search items
-results = api.search_memory(store.id, {
-    "query": "search query",
-    "options": {
-        "k": 5,
-        "score_threshold": 0.7
-    }
-})
-
 # Get items
 items = api.get_memory_items(store.id, {
-    "ids": ["item1", "item2"]
+    "query": "search query",
+    "limit": 10,
+    "offset": 0
+})
+
+# Search items
+results = api.search_memory_items(store.id, {
+    "query": "search query",
+    "filters": {
+        "type": "text",
+        "timestamp": {
+            "start": "2024-03-01T00:00:00Z",
+            "end": "2024-03-07T23:59:59Z"
+        }
+    }
 })
 ```
 
-## SDK Examples
-
-### Python
+### 3. Management API
 ```python
-from langgraph.api import MemoryAPI
-
-api = MemoryAPI(api_key="your-api-key")
-
-# Create memory store
-store = api.create_memory_store({
-    "type": "long_term",
-    "name": "Knowledge Base",
+# Update store
+api.update_memory_store(store.id, {
     "config": {
-        "capacity": 10000,
-        "persistence": "disk",
-        "indexing": "semantic"
+        "capacity": 2000,
+        "ttl": 7200
     }
 })
 
-# Add memory items
-api.add_memory_items(store.id, {
-    "items": [
-        {
-            "content": "Paris is the capital of France.",
-            "metadata": {
-                "type": "fact",
-                "category": "geography",
-                "source": "encyclopedia"
-            }
-        }
-    ]
-})
-
-# Search memory
-results = api.search_memory(store.id, {
-    "query": "What is the capital of France?",
-    "options": {
-        "k": 1,
-        "score_threshold": 0.8
-    }
-})
+# Optimize store
+api.optimize_memory_store(store.id)
 ```
 
-### JavaScript
-```javascript
-const { MemoryAPI } = require('langgraph');
+## Error Handling
 
-const api = new MemoryAPI('your-api-key');
+The memory system includes comprehensive error handling:
+- Input validation
+- Storage errors
+- Retrieval errors
+- Performance monitoring
 
-// Create memory store
-const store = await api.createMemoryStore({
-    type: 'long_term',
-    name: 'Knowledge Base',
-    config: {
-        capacity: 10000,
-        persistence: 'disk',
-        indexing: 'semantic'
-    }
-});
+## Security Considerations
 
-// Add memory items
-await api.addMemoryItems(store.id, {
-    items: [
-        {
-            content: 'Paris is the capital of France.',
-            metadata: {
-                type: 'fact',
-                category: 'geography',
-                source: 'encyclopedia'
-            }
-        }
-    ]
-});
+Security features include:
+- Access control
+- Data encryption
+- Audit logging
+- Rate limiting
 
-// Search memory
-const results = await api.searchMemory(store.id, {
-    query: 'What is the capital of France?',
-    options: {
-        k: 1,
-        scoreThreshold: 0.8
-    }
-});
-``` 
+## Performance Optimization
+
+Performance features include:
+- Caching
+- Batch operations
+- Indexing
+- Query optimization
+
+## Monitoring and Logging
+
+Monitoring features include:
+- Usage metrics
+- Performance metrics
+- Error tracking
+- Audit logs 

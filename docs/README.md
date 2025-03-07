@@ -12,36 +12,36 @@ This documentation is organized into several main sections:
 - [Configuration Guide](guides/configuration.md) - System configuration and setup
 
 ### 2. Core Documentation
-- [API Documentation](api/README.md) - Complete API reference
+- [API Documentation](api/README.md) - Complete API reference and endpoints
 - [Architecture Overview](architecture/README.md) - System architecture and components
-- [Workflow Documentation](workflow.md) - Workflow system details
+- [Workflow Documentation](workflow.md) - Workflow system and task management
 - [Memory Management](memory/README.md) - Context and memory systems
 - [Vector Store Guide](vector_store/README.md) - Vector storage and retrieval
 - [Graph Store Guide](graph_store/README.md) - Graph-based storage system
 
 ### 3. Development
-- [Development Guide](development/README.md) - Developer guidelines
+- [Development Guide](development/README.md) - Developer guidelines and setup
 - [Contributing Guide](development/CONTRIBUTING.md) - Contribution guidelines
-- [Testing Guide](development/TESTING.md) - Testing procedures
-- [Debugging Guide](guides/debugging.md) - Troubleshooting
-- [Code Style Guide](development/CODE_STYLE.md) - Coding standards
+- [Testing Guide](development/TESTING.md) - Testing procedures and best practices
+- [Debugging Guide](guides/debugging.md) - Troubleshooting and debugging
+- [Code Style Guide](development/CODE_STYLE.md) - Coding standards and conventions
 
 ### 4. Deployment
-- [Deployment Guide](deployment/README.md) - Deployment instructions
+- [Deployment Guide](deployment/README.md) - Deployment instructions and setup
 - [Environment Setup](deployment/ENVIRONMENT.md) - Environment configuration
 - [Production Deployment](deployment/PRODUCTION.md) - Production guidelines
-- [Monitoring Guide](deployment/MONITORING.md) - System monitoring
+- [Monitoring Guide](deployment/MONITORING.md) - System monitoring and logging
 
-### 5. Examples
-- [Basic Examples](examples/basic.md) - Simple usage examples
-- [Advanced Examples](examples/advanced.md) - Complex use cases
-- [Integration Examples](examples/integration.md) - Integration patterns
-- [UI Examples](examples/ui.md) - UI component examples
+### 5. User Guides
+- [Basic Usage](guides/basic_usage.md) - Simple usage examples
+- [Advanced Features](guides/advanced_features.md) - Complex use cases
+- [Integration Guide](guides/integration.md) - Integration patterns
+- [UI Guide](guides/ui.md) - UI component usage
 
 ### 6. Additional Resources
 - [FAQ](guides/faq.md) - Frequently asked questions
-- [Troubleshooting](guides/troubleshooting.md) - Common issues
-- [Glossary](guides/glossary.md) - Key terms
+- [Troubleshooting](guides/troubleshooting.md) - Common issues and solutions
+- [Glossary](guides/glossary.md) - Key terms and concepts
 - [Security Guide](guides/security.md) - Security best practices
 
 ## Quick Links

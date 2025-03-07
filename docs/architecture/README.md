@@ -37,13 +37,13 @@ The data management system includes:
 - Storage system (`src/storage/`)
 - Data processing (`src/data/`)
 
-### 3. Infrastructure
+### 3. API Layer
 
-The infrastructure layer (`src/infrastructure/`) provides:
-- Configuration management
-- Logging system
-- Monitoring
-- Deployment tools
+The API layer (`src/api/`) provides:
+- RESTful endpoints
+- WebSocket support
+- Authentication
+- Rate limiting
 
 ### 4. UI Layer
 
@@ -51,14 +51,6 @@ The UI layer (`src/ui/`) provides:
 - User interface components
 - Visualization tools
 - Interactive workflow builder
-
-### 5. API Layer
-
-The API layer (`src/api/`) provides:
-- RESTful endpoints
-- WebSocket support
-- Authentication
-- Rate limiting
 
 ## Data Flow
 
@@ -102,13 +94,13 @@ The data management system includes:
 - Storage system for data persistence
 - Data processing pipeline
 
-### Infrastructure
+### API Layer
 
-The infrastructure layer provides:
-- Configuration management
-- Logging and monitoring
-- Deployment tools
-- Development environment setup
+The API layer provides:
+- RESTful endpoints
+- WebSocket support
+- Authentication
+- Rate limiting
 
 ### UI Layer
 
@@ -117,14 +109,6 @@ The UI layer provides:
 - Visualization tools
 - User interface components
 - Real-time monitoring
-
-### API Layer
-
-The API layer provides:
-- RESTful endpoints
-- WebSocket support
-- Authentication
-- Rate limiting
 
 ## Security Architecture
 
@@ -190,11 +174,8 @@ src/
 │   └── services/     # Service layer
 ├── data/             # Data processing
 ├── graph_store/      # Graph storage
-├── infrastructure/   # Infrastructure components
-├── logs/             # Logging system
 ├── memory/           # Memory management
 ├── models/           # Data models
-├── neuralflow/       # Main package
 ├── services/         # Business services
 ├── storage/          # Storage system
 ├── ui/               # User interface

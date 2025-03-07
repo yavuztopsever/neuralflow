@@ -40,21 +40,22 @@ Munich, Germany
 neuralflow/
 ├── src/
 │   ├── api/           # API endpoints and routes
-│   ├── core/          # Core functionality
-│   ├── data/          # Data processing modules
-│   ├── graph_store/   # Graph storage implementation
+│   ├── core/          # Core functionality and services
+│   ├── data/          # Data processing and management
+│   ├── graph_store/   # Graph storage and operations
 │   ├── memory/        # Memory management systems
 │   ├── models/        # Data models and schemas
-│   ├── services/      # Business logic services
+│   ├── services/      # Business logic and workflow services
 │   ├── storage/       # Storage implementations
 │   ├── ui/           # User interface components
-│   ├── utils/        # Utility functions
+│   ├── utils/        # Utility functions and helpers
 │   └── vector_store/ # Vector storage implementations
-├── tests/            # Test suite
-├── docs/            # Documentation
-├── examples/        # Example implementations
-├── config/         # Configuration files
-└── scripts/        # Utility scripts
+├── tests/            # Test suite and test utilities
+├── docs/            # Comprehensive documentation
+├── config/         # Configuration files and settings
+├── scripts/        # Utility and setup scripts
+├── storage/        # Data storage directory
+└── requirements/   # Dependency management
 ```
 
 ## Installation
@@ -107,12 +108,11 @@ pytest
 
 Comprehensive documentation is available in the `docs` directory:
 
-- [API Documentation](docs/api/README.md)
-- [Architecture Overview](docs/architecture/README.md)
-- [Development Guide](docs/development/README.md)
-- [Deployment Guide](docs/deployment/README.md)
-- [Examples](docs/examples/README.md)
-- [User Guides](docs/guides/README.md)
+- [API Documentation](docs/api/README.md) - API endpoints and usage
+- [Architecture Overview](docs/architecture/README.md) - System design and components
+- [Development Guide](docs/development/README.md) - Development setup and guidelines
+- [Deployment Guide](docs/deployment/README.md) - Deployment instructions
+- [User Guides](docs/guides/README.md) - User documentation and tutorials
 
 ## Contributing
 

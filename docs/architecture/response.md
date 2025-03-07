@@ -256,119 +256,69 @@ for chunk in api.stream_response(response.id):
 ```python
 # Format response
 formatted = api.format_response(response.id, {
-    "format": {
-        "type": "markdown",
-        "options": {
-            "include_metadata": True
-        }
+    "template": "markdown",
+    "options": {
+        "include_metadata": True,
+        "highlight_code": True
     }
 })
 
-# Translate response
-translated = api.translate_response(response.id, {
-    "target_language": "es",
-    "options": {
-        "preserve_formatting": True
-    }
+# Validate response
+validation = api.validate_response(response.id, {
+    "checks": [
+        "quality",
+        "completeness",
+        "relevance"
+    ]
 })
 ```
 
-## SDK Examples
-
-### Python
+### 3. Management API
 ```python
-from langgraph.api import ResponseAPI
-
-api = ResponseAPI(api_key="your-api-key")
-
-# Generate response
-response = api.generate_response({
-    "type": "rich",
+# Update response
+api.update_response(response.id, {
     "content": {
-        "text": "Sample response text",
-        "media": [
-            {
-                "type": "image",
-                "url": "https://example.com/image.jpg"
-            }
-        ]
+        "text": "Updated content"
     },
     "options": {
         "style": {
-            "tone": "friendly",
-            "formality": "casual"
-        },
-        "format": {
-            "type": "html",
-            "template": "custom_template"
+            "tone": "casual"
         }
     }
 })
 
-# Process response
-processed = api.process_response(response.id, {
-    "operations": [
-        {
-            "type": "format",
-            "options": {
-                "include_metadata": True
-            }
-        },
-        {
-            "type": "translate",
-            "options": {
-                "target_language": "fr"
-            }
-        }
-    ]
-})
+# Delete response
+api.delete_response(response.id)
 ```
 
-### JavaScript
-```javascript
-const { ResponseAPI } = require('langgraph');
+## Error Handling
 
-const api = new ResponseAPI('your-api-key');
+The response system includes comprehensive error handling:
+- Input validation
+- Generation errors
+- Processing errors
+- Delivery errors
 
-// Generate response
-const response = await api.generateResponse({
-    type: 'rich',
-    content: {
-        text: 'Sample response text',
-        media: [
-            {
-                type: 'image',
-                url: 'https://example.com/image.jpg'
-            }
-        ]
-    },
-    options: {
-        style: {
-            tone: 'friendly',
-            formality: 'casual'
-        },
-        format: {
-            type: 'html',
-            template: 'custom_template'
-        }
-    }
-});
+## Security Considerations
 
-// Process response
-const processed = await api.processResponse(response.id, {
-    operations: [
-        {
-            type: 'format',
-            options: {
-                includeMetadata: true
-            }
-        },
-        {
-            type: 'translate',
-            options: {
-                targetLanguage: 'fr'
-            }
-        }
-    ]
-});
-``` 
+Security features include:
+- Input sanitization
+- Output validation
+- Rate limiting
+- Access control
+
+## Performance Optimization
+
+Performance features include:
+- Response caching
+- Batch processing
+- Streaming support
+- Resource management
+
+## Monitoring and Logging
+
+Monitoring features include:
+- Generation metrics
+- Quality metrics
+- Performance metrics
+- Error tracking 

@@ -49,19 +49,21 @@ neuralflow/
 │   │   └── services/      # Service layer
 │   ├── data/              # Data processing
 │   ├── graph_store/       # Graph storage
-│   ├── infrastructure/    # Infrastructure components
-│   ├── logs/              # Logging system
 │   ├── memory/            # Memory management
 │   ├── models/            # Data models
-│   ├── neuralflow/        # Main package
 │   ├── services/          # Business services
 │   ├── storage/           # Storage system
 │   ├── ui/                # User interface
 │   ├── utils/             # Utility functions
 │   └── vector_store/      # Vector storage
 ├── tests/                 # Test files
+│   ├── unit/             # Unit tests
+│   ├── integration/      # Integration tests
+│   ├── e2e/             # End-to-end tests
+│   ├── performance/     # Performance tests
+│   ├── acceptance/      # Acceptance tests
+│   └── fixtures/        # Test fixtures
 ├── docs/                  # Documentation
-├── examples/              # Example code
 └── scripts/               # Utility scripts
 ```
 
@@ -105,16 +107,32 @@ def process_data(data):
 
 ### 3. Testing
 
+#### Test Types
+- Unit tests: Test individual components
+- Integration tests: Test component interactions
+- End-to-end tests: Test complete workflows
+- Performance tests: Test system performance
+- Acceptance tests: Test business requirements
+
 #### Running Tests
 ```bash
 # Run all tests
 pytest
 
 # Run specific test file
-pytest tests/test_workflow.py
+pytest tests/unit/core/workflow/test_workflow_manager.py
 
-# Run with coverage
+# Run tests with coverage
 pytest --cov=src tests/
+
+# Run tests in parallel
+pytest -n auto
+
+# Run specific test types
+pytest tests/unit/  # Unit tests only
+pytest tests/integration/  # Integration tests only
+pytest tests/e2e/  # End-to-end tests only
+pytest tests/performance/  # Performance tests only
 ```
 
 #### Writing Tests
@@ -124,18 +142,38 @@ import pytest
 from neuralflow.core.workflow import WorkflowManager
 
 def test_workflow_creation():
+    # Arrange
     config = WorkflowConfig()
+    
+    # Act
     manager = WorkflowManager(config)
+    
+    # Assert
     assert manager.config == config
     assert manager.state_manager is not None
 
 @pytest.mark.asyncio
 async def test_workflow_execution():
+    # Arrange
     config = WorkflowConfig()
     manager = WorkflowManager(config)
+    
+    # Act
     result = await manager.process_user_input("test query")
+    
+    # Assert
     assert result.final_response is not None
+    assert result.error is None
 ```
+
+#### Test Best Practices
+- Use pytest fixtures for setup and teardown
+- Mock external dependencies
+- Test edge cases and error conditions
+- Maintain test isolation
+- Use parameterized tests where appropriate
+- Write clear test descriptions
+- Keep tests focused and atomic
 
 ### 4. Documentation
 
@@ -248,27 +286,8 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ## Contributing
 
-### 1. Fork and Clone
+Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
 
-1. Fork the repository
-2. Clone your fork
-3. Create feature branch
-4. Make changes
-5. Push to your fork
-6. Create pull request
+## License
 
-### 2. Code Review Checklist
-
-- [ ] Code follows style guidelines
-- [ ] Tests are included and pass
-- [ ] Documentation is updated
-- [ ] No sensitive data is exposed
-- [ ] Error handling is implemented
-- [ ] Performance is considered
-
-## Support
-
-For development-related questions:
-- Email: development@neuralflow.com
-- Documentation: https://docs.neuralflow.com/development
-- GitHub Issues: https://github.com/yavuztopsever/neuralflow/issues 
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details. 
