@@ -1,18 +1,35 @@
 #!/usr/bin/env python3
 """
-Training script for LangGraph models.
+Training script for NeuralFlow models.
 """
 
 import argparse
 import sys
+import json
+import yaml
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+from datetime import datetime
 
-from src.models.llm import BaseLLM
-from src.models.embeddings import BaseEmbedding
-from src.config.settings import settings
+from src.neuralflow.tools.data.core.unified_data import UnifiedData, DataConfig
+from src.neuralflow.tools.models.core.unified_model import UnifiedModel, ModelConfig
+from src.neuralflow.tools.monitoring.core.unified_monitor import UnifiedMonitor, MonitoringConfig
 
-def train_model(
+def load_config(config_path: str) -> Dict[str, Any]:
+    """Load configuration from file.
+    
+    Args:
+        config_path: Path to configuration file
+        
+    Returns:
+        Configuration dictionary
+    """
+    with open(config_path) as f:
+        if config_path.endswith('.json'):
+            return json.load(f)
+        return yaml.safe_load(f)
+
+async def train_model(
     model_type: str,
     model_name: str,
     data_path: str,
@@ -21,31 +38,60 @@ def train_model(
     """Train a model.
     
     Args:
-        model_type: Type of model to train (llm or embedding)
+        model_type: Type of model to train
         model_name: Name of the model
         data_path: Path to training data
         config: Training configuration
     """
-    if model_type == "llm":
-        model = BaseLLM(config)
-    elif model_type == "embedding":
-        model = BaseEmbedding(config)
-    else:
-        raise ValueError(f"Unknown model type: {model_type}")
+    # Initialize components
+    data_system = UnifiedData(DataConfig(**config.get('data', {})))
+    model_system = UnifiedModel(ModelConfig(**config.get('model', {})))
+    monitor = UnifiedMonitor(MonitoringConfig(
+        monitor_id=f"train_{model_name}",
+        monitor_type="training"
+    ))
     
-    # Load training data
-    data = load_training_data(data_path)
-    
-    # Train model
-    model.train(data, **config)
-    
-    # Save model
-    save_path = Path("storage/models") / model_name
-    model.save(str(save_path))
-    
-    print(f"Model trained and saved to {save_path}")
+    try:
+        # Load and process data
+        raw_data = load_training_data(data_path)
+        processed_data = await data_system.process_data(
+            data=raw_data,
+            processor="training",
+            data_type=model_type
+        )
+        
+        # Train model
+        training_metrics = await model_system.train(
+            model_type=model_type,
+            model_name=model_name,
+            training_data=processed_data,
+            **config.get('training', {})
+        )
+        
+        # Record metrics
+        await monitor.record_metric({
+            'timestamp': datetime.now().isoformat(),
+            'model_name': model_name,
+            'model_type': model_type,
+            'metrics': training_metrics
+        })
+        
+        # Save model
+        save_path = Path("storage/models") / model_name
+        await model_system.save(model_name, str(save_path))
+        
+        print(f"Model trained and saved to {save_path}")
+        print("\nTraining metrics:")
+        for metric, value in training_metrics.items():
+            print(f"- {metric}: {value}")
+            
+    finally:
+        # Cleanup
+        data_system.cleanup()
+        model_system.cleanup()
+        monitor.cleanup()
 
-def load_training_data(data_path: str) -> Any:
+def load_training_data(data_path: str) -> Dict[str, Any]:
     """Load training data from file.
     
     Args:
@@ -54,15 +100,16 @@ def load_training_data(data_path: str) -> Any:
     Returns:
         Training data
     """
-    # Implementation will be added later
-    pass
+    with open(data_path) as f:
+        if data_path.endswith('.json'):
+            return json.load(f)
+        return yaml.safe_load(f)
 
-def main():
+async def main():
     """Main function."""
-    parser = argparse.ArgumentParser(description="Train a LangGraph model")
+    parser = argparse.ArgumentParser(description="Train a NeuralFlow model")
     parser.add_argument(
         "--model-type",
-        choices=["llm", "embedding"],
         required=True,
         help="Type of model to train"
     )
@@ -89,22 +136,11 @@ def main():
         config = load_config(args.config)
     
     try:
-        train_model(args.model_type, args.model_name, args.data_path, config)
+        await train_model(args.model_type, args.model_name, args.data_path, config)
     except Exception as e:
         print(f"Error training model: {e}", file=sys.stderr)
         sys.exit(1)
 
-def load_config(config_path: str) -> Dict[str, Any]:
-    """Load configuration from file.
-    
-    Args:
-        config_path: Path to configuration file
-        
-    Returns:
-        Configuration dictionary
-    """
-    # Implementation will be added later
-    pass
-
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())

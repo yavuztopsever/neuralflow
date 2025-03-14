@@ -115,13 +115,34 @@ class TestServices:
         assert llm_result is not None
         assert "text" in llm_result
         
+        # Test embedding generation
+        text = "Test text for embedding"
         embedding = await service_components["model_service"].generate_embedding(
-            "Test text",
+            text,
             model="test-embedding-model"
         )
         assert embedding is not None
+        assert isinstance(embedding, list)
         assert len(embedding) > 0
+        assert all(isinstance(x, float) for x in embedding)
         
+        # Test batch embedding generation
+        texts = ["Text 1", "Text 2", "Text 3"]
+        embeddings = await service_components["model_service"].generate_batch_embeddings(
+            texts,
+            model="test-embedding-model"
+        )
+        assert len(embeddings) == len(texts)
+        assert all(len(emb) > 0 for emb in embeddings)
+        
+        # Test embedding similarity
+        similarity = await service_components["model_service"].calculate_similarity(
+            embedding,
+            embedding
+        )
+        assert similarity == 1.0
+        
+        # Test classification
         classification = await service_components["model_service"].classify_text(
             "Test text",
             model="test-classifier"
@@ -381,4 +402,39 @@ class TestServices:
         
         # Test scheduling service error handling
         with pytest.raises(ValueError):
-            await service_components["scheduling_service"].schedule_task(None, None, None) 
+            await service_components["scheduling_service"].schedule_task(None, None, None)
+        
+        # Test invalid model name
+        with pytest.raises(ValueError):
+            await service_components["model_service"].generate_text(
+                "Test prompt",
+                model="nonexistent-model"
+            )
+        
+        # Test invalid embedding input
+        with pytest.raises(ValueError):
+            await service_components["model_service"].generate_embedding(
+                None,
+                model="test-embedding-model"
+            )
+        
+        # Test invalid batch embedding input
+        with pytest.raises(ValueError):
+            await service_components["model_service"].generate_batch_embeddings(
+                None,
+                model="test-embedding-model"
+            )
+        
+        # Test invalid similarity calculation
+        with pytest.raises(ValueError):
+            await service_components["model_service"].calculate_similarity(
+                None,
+                [0.1] * 128
+            )
+        
+        # Test invalid classification input
+        with pytest.raises(ValueError):
+            await service_components["model_service"].classify_text(
+                None,
+                model="test-classifier"
+            ) 

@@ -25,6 +25,7 @@ venv/
 env/
 ENV/
 .env
+.venv/
 
 # IDE
 .idea/
@@ -45,6 +46,7 @@ storage/vector_store/
 storage/memory/
 vector_store/
 models/
+!src/core/models/implementations/
 
 # Test data
 tests/unit/vector_store/test_data/

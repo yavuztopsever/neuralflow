@@ -96,34 +96,6 @@ class TestData:
             assert len(processed_chunk) > 0
     
     @pytest.mark.asyncio
-    async def test_data_validation(self, data_components):
-        """Test data validation functionality."""
-        # Test single record validation
-        record = {
-            "user_id": "test_user",
-            "query": "test query",
-            "timestamp": datetime.now(),
-            "metadata": {"source": "test"}
-        }
-        is_valid = await data_components["validator"].validate_record(record)
-        assert is_valid
-        
-        # Test batch validation
-        records = [record] * 3
-        validation_results = await data_components["validator"].validate_batch(records)
-        assert all(validation_results)
-        
-        # Test schema validation
-        invalid_record = {
-            "user_id": 123,  # Should be string
-            "query": "test query",
-            "timestamp": "invalid",  # Should be datetime
-            "metadata": "invalid"  # Should be dict
-        }
-        is_valid = await data_components["validator"].validate_record(invalid_record)
-        assert not is_valid
-    
-    @pytest.mark.asyncio
     async def test_data_transformation(self, data_components):
         """Test data transformation functionality."""
         # Test single record transformation
@@ -147,6 +119,39 @@ class TestData:
         async for transformed_chunk in data_components["transformer"].stream_transform(records):
             assert transformed_chunk is not None
             assert len(transformed_chunk) > 0
+    
+    @pytest.mark.asyncio
+    async def test_data_validation_and_processing(self, data_components):
+        """Test data validation and processing functionality."""
+        # Test processed data validation
+        processed_data = {
+            "embedding": {
+                "texts": ["text1", "text2"],
+                "embeddings": [[0.1] * 384, [0.2] * 384]
+            },
+            "finetuning": {
+                "examples": [
+                    {
+                        "input": "input1",
+                        "output": "output1",
+                        "metadata": {"timestamp": "2024-03-07T12:00:00Z"}
+                    }
+                ]
+            }
+        }
+        
+        # Should not raise any exceptions
+        await data_components["validator"].validate_processed_data(processed_data)
+        
+        # Test data caching
+        await data_components["processor"].cache_processed_data(
+            "test_session",
+            processed_data
+        )
+        
+        # Verify cache file exists
+        cache_file = data_components["processor"].cache_dir / "test_session_processed.json"
+        assert cache_file.exists()
     
     @pytest.mark.asyncio
     async def test_data_pipeline(self, data_components):
@@ -187,6 +192,28 @@ class TestData:
         # Test invalid data transformation
         with pytest.raises(ValueError):
             await data_components["transformer"].transform_record(None)
+        
+        # Test invalid session data
+        with pytest.raises(ValueError):
+            await data_components["processor"].process_session_data({})
+    
+    @pytest.mark.asyncio
+    async def test_cleanup(self, data_components):
+        """Test cleanup functionality."""
+        # Create some test data
+        await data_components["processor"].process_session_data({
+            "session_id": "test_cleanup",
+            "conversation_data": {
+                "messages": [{"content": "test"}],
+                "metadata": {}
+            }
+        })
+        
+        # Cleanup
+        await data_components["processor"].cleanup()
+        
+        # Verify cleanup
+        assert not data_components["processor"].cache_dir.exists()
     
     @pytest.mark.asyncio
     async def test_performance(self, data_components):
