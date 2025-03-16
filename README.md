@@ -1,6 +1,9 @@
 # NeuralFlow
 
-NeuralFlow is a powerful and flexible framework for building and managing AI workflows, with a focus on integrating large language models, vector stores, and advanced context management.
+NeuralFlow is a playground project where I experiment with the extent of finetuning and training models like LLMs and embedding models with personal chat and documentation data to assess their potential value in personal assistance tasks and chatbots. I aim to leverage the latest approaches, such as LangGraph and graph-based context retrieval, to explore the potential of more complex agentic or non-agentic logic flows.
+
+The project is constantly evolving and experimental, so its primary focus is on education and discovery rather than user-friendliness. Despite this, I strive to maintain its functionality as much as possible. Feel free to experiment with the project or use it as a foundation for your own applications.
+
 
 ## Author
 
@@ -21,46 +24,40 @@ Munich, Germany
 - **DevOps**: Docker, CI/CD, Pytest
 - **Languages**: English (Fluent), German (Beginner), French (Proficient), Turkish (Native)
 
-## Features
+## Current Features
 
-- **Advanced Workflow Management**: Build complex AI workflows with graph-based task execution
-- **LLM Integration**: Seamless integration with various LLM providers through LangChain
-- **Vector Store Support**: Built-in support for efficient vector storage and retrieval using FAISS and ChromaDB
-- **Context Management**: Sophisticated context handling for maintaining conversation state
-- **Extensible Architecture**: Easy-to-extend architecture for custom implementations
-- **Security First**: Built-in security features including rate limiting and authentication
-- **Performance Optimized**: Efficient caching and state management
-- **Graph-Based Storage**: Advanced graph store for complex relationship management
-- **Memory Management**: Sophisticated memory systems for context retention
-- **UI Components**: Built-in UI components for workflow visualization and management
+- **LangChain Integration**: Built on LangChain 0.1.0+ with support for OpenAI and community models
+- **Vector Store Support**: Integration with ChromaDB, FAISS, Pinecone, and Weaviate
+- **Advanced LLM Support**: OpenAI API integration with tiktoken for token management
+- **Data Processing**: Support for PDF processing, web crawling, and Wikipedia data extraction
+- **Visualization Tools**: Built-in support for matplotlib, seaborn, and plotly
+- **Database Management**: SQLAlchemy with PostgreSQL support and Alembic migrations
+- **Monitoring**: Prometheus metrics and structured logging
+- **Development Tools**: Comprehensive testing setup with pytest
+- **Model Support**: PyTorch 2.1.0+ integration with Hugging Face Transformers
 
 ## Project Structure
 
 ```
 neuralflow/
-├── src/              # Source code and application data
-│   ├── api/         # API endpoints and routes
-│   ├── config/      # Configuration files and settings
-│   ├── core/        # Core functionality and services
-│   ├── data/        # Data processing and management
-│   ├── graph_store/ # Graph storage and operations
-│   ├── logs/        # Application logs
-│   ├── memory/      # Memory management systems
-│   ├── models/      # Model code and implementations
-│   ├── services/    # Business logic and workflow services
-│   ├── storage/     # Data storage and persistence
-│   ├── ui/          # User interface components
-│   ├── utils/       # Utility functions and helpers
-│   └── vector_store/# Vector storage implementations
+├── src/
+│   └── neuralflow/
+│       ├── frontend/     # Frontend components
+│       ├── infrastructure/ # Core infrastructure
+│       ├── tools/        # Utility tools
+│       ├── config.py     # Configuration management
+│       ├── main.py      # Application entry point
+│       └── __init__.py  # Package initialization
 ├── models/          # Model files and data
-├── tests/           # Test suite and test utilities
-├── docs/            # Comprehensive documentation
-├── scripts/         # Utility and setup scripts
-├── .env             # Environment variables
-├── .env.example     # Example environment variables
+├── tests/           # Test suite
+├── docs/           # Documentation
+├── scripts/        # Utility scripts
+├── .env            # Environment configuration
 ├── requirements.txt # Production dependencies
 ├── requirements-dev.txt # Development dependencies
-└── setup.py         # Package setup file
+├── pyproject.toml  # Project configuration
+├── setup.py        # Package setup
+└── pytest.ini      # Test configuration
 ```
 
 ## Installation
@@ -82,7 +79,12 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Set up configuration:
+4. For development, install additional dependencies:
+```bash
+pip install -r requirements-dev.txt
+```
+
+5. Set up configuration:
 ```bash
 cp .env.example .env
 # Edit .env with your settings
@@ -92,36 +94,36 @@ cp .env.example .env
 
 1. Start the application:
 ```bash
-python src/main.py
+python -m neuralflow.main
 ```
 
-2. Access the API documentation at `http://localhost:8000/docs`
+2. Access the application interface (URL will be provided in the console output)
 
-## Development Setup
+## Development
 
-For development, install additional dependencies:
-```bash
-pip install -r requirements-dev.txt
-```
-
-Run tests:
+### Running Tests
 ```bash
 pytest
 ```
 
+### Code Coverage
+```bash
+pytest --cov=neuralflow tests/
+```
+
 ## Documentation
 
-Comprehensive documentation is available in the `docs` directory:
+Documentation is available in the `docs` directory:
 
-- [API Documentation](docs/api/README.md) - API endpoints and usage
-- [Architecture Overview](docs/architecture/README.md) - System design and components
-- [Development Guide](docs/development/README.md) - Development setup and guidelines
-- [Deployment Guide](docs/deployment/README.md) - Deployment instructions
-- [User Guides](docs/guides/README.md) - User documentation and tutorials
+- API Documentation
+- Architecture Overview
+- Development Guidelines
+- Deployment Instructions
+- User Guides
 
 ## Contributing
 
-Contributions are welcome! Please read our [Contributing Guide](docs/development/README.md) for details on our code of conduct and the process for submitting pull requests.
+Contributions are welcome! Please read our Contributing Guide in the documentation for details on our code of conduct and the process for submitting pull requests.
 
 ## License
 
@@ -129,4 +131,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-For support, please check our [documentation](docs/README.md) or open an issue on GitHub.
+For support:
+1. Check the documentation in the `docs` directory
+2. Open an issue on GitHub
+3. Contact the author directly through the provided contact information
