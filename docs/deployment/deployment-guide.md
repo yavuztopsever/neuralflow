@@ -1,34 +1,12 @@
-# Deployment Guide
+# NeuralFlow Deployment Guide
 
-This guide provides comprehensive instructions for deploying NeuralFlow in various environments.
-
-## Deployment Architecture
-
-```mermaid
-graph TB
-    subgraph "Production Environment"
-        A[Load Balancer] --> B[API Servers]
-        B --> C[Application Servers]
-        
-        subgraph "Services"
-            C --> D[LLM Service]
-            C --> E[Vector Store]
-            C --> F[Memory Service]
-        end
-        
-        subgraph "Data Layer"
-            D --> G[LLM Cache]
-            E --> H[Vector Database]
-            F --> I[Memory Store]
-        end
-        
-        subgraph "Monitoring"
-            J[Metrics]
-            K[Logging]
-            L[Alerts]
-        end
-    end
-```
+## Table of Contents
+1. [Prerequisites](#prerequisites)
+2. [Local Development](#local-development)
+3. [Docker Deployment](#docker-deployment)
+4. [Cloud Deployment](#cloud-deployment)
+5. [Monitoring](#monitoring)
+6. [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
@@ -36,117 +14,200 @@ graph TB
 - CPU: 4+ cores recommended
 - RAM: 8GB minimum, 16GB recommended
 - Storage: SSD with 20GB+ free space
-- Network: Stable internet connection
+- GPU: CUDA 11.0+ (optional, for GPU support)
 
 ### Software Requirements
 - Python 3.8 or higher
-- Docker 20.10 or higher
-- Kubernetes 1.20+ (for container orchestration)
 - Redis 6.0 or higher
-- PostgreSQL 13+ (optional)
+- Docker 20.10 or higher
+- NVIDIA drivers (if using GPU)
 
-## Local Development Setup
-
-1. Clone the repository:
+### Environment Setup
+1. Install system dependencies:
 ```bash
-git clone https://github.com/yourusername/neuralflow.git
-cd neuralflow
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install -y \
+    python3-dev \
+    python3-pip \
+    redis-server \
+    build-essential \
+    git
+
+# macOS
+brew install python3 redis
 ```
 
-2. Create and activate virtual environment:
+2. Install CUDA (if using GPU):
 ```bash
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+# Check NVIDIA driver
+nvidia-smi
+
+# Install CUDA Toolkit
+# Follow instructions at https://developer.nvidia.com/cuda-downloads
 ```
 
-3. Install dependencies:
+## Local Development
+
+### Virtual Environment Setup
 ```bash
+# Create virtual environment
+python3 -m venv .venv
+
+# Activate virtual environment
+source .venv/bin/activate  # Linux/macOS
+.venv\Scripts\activate     # Windows
+
+# Install dependencies
 pip install -r requirements.txt
-pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt  # For development
 ```
 
-4. Set up environment variables:
+### Configuration
+1. Copy example environment file:
 ```bash
 cp .env.example .env
-# Edit .env with your configuration
 ```
 
-5. Run development server:
+2. Edit `.env` with your settings:
+```ini
+# API Keys
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/dbname
+
+# Redis
+REDIS_URL=redis://localhost:6379/0
+
+# Model Settings
+DEFAULT_MODEL=gpt-3.5-turbo
+MAX_TOKENS=4096
+```
+
+### Running the Application
 ```bash
-python main.py
+# Development mode
+python -m neuralflow.main --dev
+
+# Debug mode
+python -m neuralflow.main --debug
+
+# Production mode
+python -m neuralflow.main
 ```
 
 ## Docker Deployment
 
-### Building the Docker Image
-
-1. Build the image:
+### Building the Image
 ```bash
-docker build -t neuralflow:latest .
+# Build image
+docker build -t neuralflow .
+
+# Build with specific Python version
+docker build --build-arg PYTHON_VERSION=3.9 -t neuralflow .
 ```
 
-2. Run the container:
+### Running Containers
 ```bash
-docker run -d \
-    --name neuralflow \
-    -p 8000:8000 \
-    -v $(pwd)/config:/app/config \
-    --env-file .env \
-    neuralflow:latest
+# Basic run
+docker run -p 8000:8000 neuralflow
+
+# With environment variables
+docker run -p 8000:8000 \
+    -e OPENAI_API_KEY=your_key \
+    -e DATABASE_URL=your_url \
+    neuralflow
+
+# With GPU support
+docker run --gpus all -p 8000:8000 neuralflow
 ```
 
-### Docker Compose Setup
-
+### Docker Compose
 ```yaml
+# docker-compose.yml
 version: '3.8'
 
 services:
-  api:
+  app:
     build: .
     ports:
       - "8000:8000"
     environment:
-      - REDIS_URL=redis://redis:6379
-      - VECTOR_STORE_URL=vector-store:6333
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=postgresql://postgres:password@db:5432/neuralflow
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
+      - db
       - redis
-      - vector-store
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=neuralflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
 
   redis:
-    image: redis:6-alpine
-    ports:
-      - "6379:6379"
+    image: redis:6
     volumes:
-      - redis-data:/data
-
-  vector-store:
-    image: milvus/milvus:latest
-    ports:
-      - "6333:6333"
-    volumes:
-      - vector-store-data:/var/lib/milvus
+      - redis_data:/data
 
 volumes:
-  redis-data:
-  vector-store-data:
+  postgres_data:
+  redis_data:
 ```
 
-## Kubernetes Deployment
+## Cloud Deployment
 
-### Basic Deployment
+### AWS Deployment
 
-1. Create namespace:
+#### Prerequisites
+- AWS CLI installed and configured
+- ECR repository created
+- ECS cluster configured
+
+#### Steps
+1. Build and push Docker image:
 ```bash
-kubectl create namespace neuralflow
+# Login to ECR
+aws ecr get-login-password --region region | docker login --username AWS --password-stdin account.dkr.ecr.region.amazonaws.com
+
+# Build and tag image
+docker build -t neuralflow .
+docker tag neuralflow:latest account.dkr.ecr.region.amazonaws.com/neuralflow:latest
+
+# Push image
+docker push account.dkr.ecr.region.amazonaws.com/neuralflow:latest
 ```
 
-2. Deploy application:
+2. Deploy to ECS:
+```bash
+# Create task definition
+aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+# Update service
+aws ecs update-service --cluster your-cluster --service your-service --task-definition neuralflow:latest
+```
+
+### Kubernetes Deployment
+
+#### Prerequisites
+- kubectl installed and configured
+- Kubernetes cluster running
+
+#### Steps
+1. Create Kubernetes manifests:
+
 ```yaml
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: neuralflow
-  namespace: neuralflow
 spec:
   replicas: 3
   selector:
@@ -163,373 +224,118 @@ spec:
         ports:
         - containerPort: 8000
         env:
-        - name: REDIS_URL
+        - name: OPENAI_API_KEY
           valueFrom:
-            configMapKeyRef:
-              name: neuralflow-config
-              key: redis_url
+            secretKeyRef:
+              name: api-keys
+              key: openai
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
             memory: "1Gi"
             cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
 ```
 
-### Service Configuration
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: neuralflow-service
-  namespace: neuralflow
-spec:
-  type: LoadBalancer
-  ports:
-  - port: 80
-    targetPort: 8000
-  selector:
-    app: neuralflow
-```
-
-## Configuration Management
-
-### Environment Variables
-
+2. Apply manifests:
 ```bash
-# API Configuration
-API_HOST=0.0.0.0
-API_PORT=8000
-API_WORKERS=4
-
-# LLM Configuration
-LLM_PROVIDER=openai
-LLM_MODEL=gpt-4
-LLM_TEMPERATURE=0.7
-
-# Vector Store Configuration
-VECTOR_STORE_BACKEND=faiss
-VECTOR_STORE_DIMENSION=1536
-VECTOR_STORE_METRIC=cosine
-
-# Memory Configuration
-MEMORY_BACKEND=redis
-MEMORY_TTL=3600
-MEMORY_MAX_CONTEXTS=10
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
 ```
 
-### Security Configuration
+## Monitoring
 
-```yaml
-security:
-  # Authentication
-  auth:
-    jwt_secret: your-secret-key
-    token_expiry: 3600
-    
-  # SSL/TLS
-  ssl:
-    enabled: true
-    cert_path: /path/to/cert.pem
-    key_path: /path/to/key.pem
-    
-  # Rate Limiting
-  rate_limit:
-    enabled: true
-    requests_per_minute: 60
+### Prometheus Integration
+
+1. Add Prometheus metrics:
+```python
+from prometheus_client import Counter, Histogram
+
+requests_total = Counter('neuralflow_requests_total', 'Total requests')
+response_time = Histogram('neuralflow_response_time_seconds', 'Response time')
 ```
 
-## Monitoring Setup
-
-### Prometheus Configuration
-
+2. Configure Prometheus:
 ```yaml
-global:
-  scrape_interval: 15s
-
+# prometheus.yml
 scrape_configs:
   - job_name: 'neuralflow'
     static_configs:
       - targets: ['localhost:8000']
 ```
 
-### Grafana Dashboard
+### Logging
 
-```json
-{
-  "dashboard": {
-    "id": null,
-    "title": "NeuralFlow Metrics",
-    "panels": [
-      {
-        "title": "Request Rate",
-        "type": "graph",
-        "datasource": "Prometheus",
-        "targets": [
-          {
-            "expr": "rate(http_requests_total[5m])"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+1. Configure logging:
+```python
+import logging
 
-## Scaling Considerations
-
-### Horizontal Scaling
-
-1. API Servers:
-   - Use Kubernetes HPA
-   - Configure based on CPU/Memory usage
-   - Set appropriate replica counts
-
-2. Vector Store:
-   - Implement sharding
-   - Configure read replicas
-   - Optimize index distribution
-
-3. Memory Store:
-   - Redis cluster configuration
-   - Implement cache sharding
-   - Configure persistence
-
-### Vertical Scaling
-
-1. Resource Allocation:
-   - Increase CPU/Memory limits
-   - Optimize instance types
-   - Monitor resource usage
-
-2. Performance Tuning:
-   - Adjust worker counts
-   - Optimize batch sizes
-   - Configure connection pools
-
-## Backup and Recovery
-
-### Backup Strategy
-
-1. Database Backups:
-```bash
-# Vector store backup
-milvus-backup -d /backup/vector-store
-
-# Redis backup
-redis-cli save
-```
-
-2. Configuration Backup:
-```bash
-# Backup Kubernetes configs
-kubectl get all -n neuralflow -o yaml > backup/k8s-config.yaml
-
-# Backup environment variables
-cp .env backup/.env.backup
-```
-
-### Recovery Procedures
-
-1. Service Recovery:
-```bash
-# Restore Kubernetes deployment
-kubectl apply -f backup/k8s-config.yaml
-
-# Restore Redis data
-redis-cli restore
-```
-
-2. Data Recovery:
-```bash
-# Restore vector store
-milvus-restore -f /backup/vector-store
-
-# Verify data integrity
-python scripts/verify_data.py
+logging.config.dictConfig({
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'neuralflow.log',
+            'level': 'DEBUG',
+        },
+    },
+    'root': {
+        'level': 'INFO',
+        'handlers': ['console', 'file']
+    }
+})
 ```
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. Connection Issues:
+1. Memory Issues
 ```bash
-# Check service status
-kubectl get pods -n neuralflow
+# Check memory usage
+docker stats
 
-# Check logs
-kubectl logs -f deployment/neuralflow -n neuralflow
+# Increase container memory
+docker run -m 4g neuralflow
 ```
 
-2. Performance Issues:
+2. Database Connection Issues
 ```bash
-# Monitor resource usage
-kubectl top pods -n neuralflow
+# Check database connection
+psql $DATABASE_URL
 
-# Check metrics
-curl http://localhost:8000/metrics
+# Check logs
+docker logs container_id
+```
+
+3. GPU Issues
+```bash
+# Check GPU status
+nvidia-smi
+
+# Verify CUDA installation
+python -c "import torch; print(torch.cuda.is_available())"
 ```
 
 ### Health Checks
 
-1. Service Health:
+1. Application health:
 ```bash
-# API health check
 curl http://localhost:8000/health
-
-# Component health check
-python scripts/health_check.py
 ```
 
-2. Resource Monitoring:
+2. Database health:
 ```bash
-# Monitor system resources
-htop
-
-# Monitor container resources
-docker stats
+curl http://localhost:8000/health/db
 ```
 
-## Security Considerations
-
-### Network Security
-
-1. Firewall Configuration:
+3. Redis health:
 ```bash
-# Allow API traffic
-ufw allow 8000/tcp
-
-# Allow monitoring
-ufw allow 9090/tcp
-```
-
-2. SSL/TLS Setup:
-```bash
-# Generate certificate
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout private.key -out certificate.crt
-
-# Configure nginx
-server {
-    listen 443 ssl;
-    ssl_certificate /path/to/certificate.crt;
-    ssl_certificate_key /path/to/private.key;
-}
-```
-
-### Access Control
-
-1. API Authentication:
-```python
-@app.middleware("http")
-async def authenticate(request: Request, call_next):
-    token = request.headers.get("Authorization")
-    if not token:
-        raise HTTPException(status_code=401)
-    # Validate token
-    return await call_next(request)
-```
-
-2. Role-Based Access:
-```python
-@app.middleware("http")
-async def check_permissions(request: Request, call_next):
-    user = request.user
-    if not user.has_permission(request.path):
-        raise HTTPException(status_code=403)
-    return await call_next(request)
-```
-
-## Maintenance Procedures
-
-### Regular Maintenance
-
-1. Update Dependencies:
-```bash
-# Update Python packages
-pip install --upgrade -r requirements.txt
-
-# Update Docker images
-docker-compose pull
-```
-
-2. System Cleanup:
-```bash
-# Clean old logs
-find /var/log/neuralflow -type f -mtime +30 -delete
-
-# Clean Docker resources
-docker system prune
-```
-
-### Performance Optimization
-
-1. Cache Optimization:
-```python
-# Configure cache settings
-cache_config = {
-    "ttl": 3600,
-    "max_size": "1GB",
-    "eviction_policy": "LRU"
-}
-```
-
-2. Database Optimization:
-```sql
--- Optimize vector store
-ANALYZE vector_table;
-VACUUM ANALYZE;
-```
-
-## Monitoring and Alerts
-
-### Metric Collection
-
-1. System Metrics:
-```python
-# Collect system metrics
-@app.get("/metrics")
-async def metrics():
-    return {
-        "cpu_usage": get_cpu_usage(),
-        "memory_usage": get_memory_usage(),
-        "request_rate": get_request_rate()
-    }
-```
-
-2. Application Metrics:
-```python
-# Track application metrics
-@app.middleware("http")
-async def track_metrics(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    duration = time.time() - start_time
-    record_request_duration(duration)
-    return response
-```
-
-### Alert Configuration
-
-```yaml
-alerting:
-  rules:
-    - alert: HighCPUUsage
-      expr: cpu_usage > 80
-      for: 5m
-      labels:
-        severity: warning
-      annotations:
-        description: "CPU usage is above 80%"
-
-    - alert: HighMemoryUsage
-      expr: memory_usage > 90
-      for: 5m
-      labels:
-        severity: critical
-      annotations:
-        description: "Memory usage is above 90%"
+curl http://localhost:8000/health/redis
 ``` 
