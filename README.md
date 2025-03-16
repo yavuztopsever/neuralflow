@@ -4,7 +4,6 @@ NeuralFlow is a playground project where I experiment with the extent of finetun
 
 The project is constantly evolving and experimental, so its primary focus is on education and discovery rather than user-friendliness. Despite this, I strive to maintain its functionality as much as possible. Feel free to experiment with the project or use it as a foundation for your own applications.
 
-
 ## Author
 
 **Yavuz Topsever** - Data Consultant  
@@ -24,17 +23,46 @@ Munich, Germany
 - **DevOps**: Docker, CI/CD, Pytest
 - **Languages**: English (Fluent), German (Beginner), French (Proficient), Turkish (Native)
 
+## System Architecture
+
+NeuralFlow is built with a modular, scalable architecture consisting of several core components:
+
+### Core Services
+- **Workflow Engine**: Dynamic workflow orchestration with state management
+- **LLM Service**: Multi-provider support (OpenAI, Azure OpenAI, Anthropic)
+- **Vector Store Service**: Multiple backend support (FAISS, ChromaDB)
+- **Memory Service**: Context tracking and graph-based storage
+
+### Infrastructure
+- **Graph Store**: Relationship mapping and query optimization
+- **Vector Database**: Efficient similarity search and indexing
+- **Memory Store**: Redis-backed session management and caching
+- **API Layer**: RESTful and WebSocket interfaces with authentication
+
 ## Current Features
 
-- **LangChain Integration**: Built on LangChain 0.1.0+ with support for OpenAI and community models
-- **Vector Store Support**: Integration with ChromaDB, FAISS, Pinecone, and Weaviate
-- **Advanced LLM Support**: OpenAI API integration with tiktoken for token management
-- **Data Processing**: Support for PDF processing, web crawling, and Wikipedia data extraction
-- **Visualization Tools**: Built-in support for matplotlib, seaborn, and plotly
-- **Database Management**: SQLAlchemy with PostgreSQL support and Alembic migrations
-- **Monitoring**: Prometheus metrics and structured logging
-- **Development Tools**: Comprehensive testing setup with pytest
-- **Model Support**: PyTorch 2.1.0+ integration with Hugging Face Transformers
+- **Advanced LLM Integration**: 
+  - Support for multiple LLM providers
+  - Context window management
+  - Token optimization
+  - Response streaming
+- **Vector Store Capabilities**:
+  - Multiple backend support (FAISS, ChromaDB)
+  - Efficient indexing and batch processing
+  - Automatic reindexing
+- **Memory Management**:
+  - Context tracking and token management
+  - Graph-based storage
+  - Memory optimization
+- **Development Tools**:
+  - Comprehensive testing with pytest
+  - Monitoring and analytics
+  - Docker containerization
+- **Data Processing**:
+  - PDF processing
+  - Web crawling
+  - Wikipedia data extraction
+- **Visualization**: Built-in support for matplotlib, seaborn, and plotly
 
 ## Project Structure
 
@@ -50,6 +78,11 @@ neuralflow/
 │       └── __init__.py  # Package initialization
 ├── models/          # Model files and data
 ├── tests/           # Test suite
+│   ├── architecture/  # System architecture docs
+│   ├── components/    # Component documentation
+│   ├── flows/         # Data and workflow docs
+│   ├── technical/     # Technical implementation
+│   └── deployment/    # Deployment guides
 ├── docs/           # Documentation
 ├── scripts/        # Utility scripts
 ├── .env            # Environment configuration
@@ -59,6 +92,19 @@ neuralflow/
 ├── setup.py        # Package setup
 └── pytest.ini      # Test configuration
 ```
+
+## System Requirements
+
+### Hardware Requirements
+- CPU: 4+ cores recommended
+- RAM: 8GB minimum, 16GB recommended
+- Storage: SSD with 20GB+ free space
+- GPU: CUDA 11.0+ (optional, for GPU support)
+
+### Software Requirements
+- Python 3.8 or higher
+- Redis 6.0 or higher
+- Docker 20.10 or higher
 
 ## Installation
 
@@ -113,13 +159,13 @@ pytest --cov=neuralflow tests/
 
 ## Documentation
 
-Documentation is available in the `docs` directory:
+Comprehensive documentation is available in the `docs` directory:
 
-- API Documentation
-- Architecture Overview
-- Development Guidelines
-- Deployment Instructions
-- User Guides
+- [System Architecture Overview](docs/architecture/system-overview.md)
+- [API Documentation](docs/technical/api-reference.md)
+- [Deployment Guide](docs/deployment/deployment-guide.md)
+- [Configuration Guide](docs/technical/configuration.md)
+- [Contributing Guide](docs/CONTRIBUTING.md)
 
 ## Contributing
 
